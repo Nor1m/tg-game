@@ -1,3 +1,26 @@
+const playerImage = new Image();
+const obstacleImage = new Image();
+const playerImageJump = new Image();
+const playerImageFly = new Image();
+
+playerImageFly.src = 'images/player-fly.png';
+playerImageJump.src = 'images/player-jump.png';
+playerImage.src = 'images/player.png';
+obstacleImage.src = 'images/obstacle.png';
+
+let imagesLoaded = false;
+playerImage.onload = () => {
+    if (obstacleImage.complete) {
+        imagesLoaded = true;
+    }
+};
+
+obstacleImage.onload = () => {
+    if (playerImage.complete) {
+        imagesLoaded = true;
+    }
+};
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const restartButton = document.getElementById('restartButton');
@@ -16,13 +39,13 @@ let player = {
     width: 50 * scale,
     height: 50 * scale,
     dy: 0,
-    gravity: 0.3 * scale,
+    gravity: 0.35 * scale,
     jumpPower: -15 * scale,
     grounded: false,
     color: 'red',
     poweredUp: false,
     powerUpEndTime: 0,
-    hovering: false,
+    flying: false,
     hoverEndTime: 0
 };
 
@@ -31,75 +54,83 @@ let powerUps = [];
 let gameSpeed = 5 * scale;
 let powerUpSpeed = 4 * scale;
 let baseSpawnInterval = 3000;
-let minObstacleSpawnInterval = 1000;
-let spawnIntervalVariance = 1000;
+const minObstacleSpawnInterval = 1000;
+const spawnIntervalVariance = 1000;
 let powerUpInterval = Math.random() * (10000 - 5000) + 5000;
-let hoveringBoostInterval = Math.random() * (30000 - 5000) + 5000;
-let minObstacleDistance = player.width * 20;
-let minPowerUpDistance = player.width * 30;
+let FlyingBoostInterval = Math.random() * (30000 - 5000) + 5000;
+const minObstacleDistance = player.width * 20;
+const minPowerUpDistance = player.width * 30;
 let lastSpawnTime = Date.now();
 let lastPowerUpTime = Date.now();
-let lastHoveringBoostTime = Date.now();
+let lastFlyingBoostTime = Date.now();
 let score = 0;
-let gamePaused = true; // Игра будет приостановлена по умолчанию
+let gamePaused = true;
 
 function drawPlayer() {
-    ctx.fillStyle = player.color;
-    ctx.fillRect(player.x, player.y, player.width, player.height);
+    if (imagesLoaded) {
+
+        let imageToDraw;
+
+        if (player.flying) {
+            imageToDraw = playerImageFly;
+        } else if (player.grounded) {
+            imageToDraw = playerImage;
+        } else {
+            imageToDraw = playerImageJump;
+        }
+
+        ctx.drawImage(imageToDraw, player.x, player.y, player.width, player.height);
+    }
 }
 
 function updatePlayer() {
-    if (player.hovering && Date.now() < player.hoverEndTime) {
+    if (player.flying && Date.now() < player.hoverEndTime) {
         player.dy = 0;
     } else {
-        player.hovering = false;
-        player.dy += player.gravity / 2;
+        player.flying = false;
+        player.dy += player.gravity;
         player.y += player.dy;
-        if (!player.poweredUp) {
-            player.color = 'red';
-        }
-        if (player.y + player.height < canvas.height) {
-            player.dy += player.gravity;
-            player.grounded = false;
-        } else {
+
+        if (player.y + player.height >= canvas.height) {
             player.y = canvas.height - player.height;
             player.dy = 0;
             player.grounded = true;
+        } else {
+            player.grounded = false;
         }
-    }
 
-    if (player.poweredUp && Date.now() > player.powerUpEndTime) {
-        player.poweredUp = false;
-        player.color = 'red';
-        player.jumpPower = -15 * scale;
+        if (player.poweredUp && Date.now() > player.powerUpEndTime) {
+            player.poweredUp = false;
+            player.color = 'red';
+            player.jumpPower = -15 * scale;
+        }
     }
 }
 
-function spawnObstacle(type) {
-    let height = player.height;
-    let lastObstacle = obstacles[obstacles.length - 1];
-    let obstacleX = lastObstacle ? lastObstacle.x + lastObstacle.width + minObstacleDistance : canvas.width + minObstacleDistance;
+function spawnObstacle() {
+    const height = player.height;
+    const lastObstacle = obstacles[obstacles.length - 1];
+    const obstacleX = lastObstacle ? lastObstacle.x + lastObstacle.width + minObstacleDistance : canvas.width + minObstacleDistance;
 
-    let obstacle = {
+    obstacles.push({
         x: obstacleX,
         y: canvas.height - height,
         width: 50 * scale,
         height: height,
-        speed: gameSpeed,
-        type: type
-    };
-    obstacles.push(obstacle);
+        speed: gameSpeed
+    });
 }
 
 function spawnPowerUp(type) {
-    let lastPowerUp = powerUps[powerUps.length - 1];
+    const lastPowerUp = powerUps[powerUps.length - 1];
     let powerUpX = canvas.width + Math.random() * canvas.width;
     let powerUpY;
+
     switch (type) {
         case 'jump_boost':
             powerUpY = canvas.height - player.height * 3 + (Math.random() * player.height - player.height / 2);
             break;
-        case 'hovering_boost':
+        case 'Flying_boost':
             powerUpY = canvas.height - player.height * 5 + (Math.random() * player.height - player.height / 2);
             break;
     }
@@ -108,26 +139,27 @@ function spawnPowerUp(type) {
         powerUpX += minPowerUpDistance;
     }
 
-    let powerUp = {
+    powerUps.push({
         x: powerUpX,
         y: powerUpY,
         radius: 15 * scale,
         speed: powerUpSpeed,
         type: type
-    };
-    powerUps.push(powerUp);
+    });
+
     if (type === 'jump_boost') {
         lastPowerUpTime = Date.now();
-    } else if (type === 'hovering_boost') {
-        lastHoveringBoostTime = Date.now();
+    } else if (type === 'Flying_boost') {
+        lastFlyingBoostTime = Date.now();
     }
 }
 
 function drawObstacles() {
-    obstacles.forEach(obstacle => {
-        ctx.fillStyle = 'green';
-        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-    });
+    if (imagesLoaded) {
+        obstacles.forEach(obstacle => {
+            ctx.drawImage(obstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        });
+    }
 }
 
 function drawPowerUps() {
@@ -157,8 +189,8 @@ function updatePowerUps() {
 }
 
 function detectCollision() {
-    obstacles.forEach(obstacle => {
-        let collisionFromSide = (
+    obstacles.some(obstacle => {
+        const collisionFromSide = (
             player.x < obstacle.x + obstacle.width &&
             player.x + player.width > obstacle.x &&
             player.y < obstacle.y + obstacle.height &&
@@ -168,13 +200,15 @@ function detectCollision() {
         if (collisionFromSide) {
             gamePaused = true;
             restartButton.style.display = 'block';
+            return true;
         }
+        return false;
     });
 
     powerUps.forEach((powerUp, index) => {
-        let distX = player.x + player.width / 2 - powerUp.x;
-        let distY = player.y + player.height / 2 - powerUp.y;
-        let distance = Math.sqrt(distX * distX + distY * distY);
+        const distX = player.x + player.width / 2 - powerUp.x;
+        const distY = player.y + player.height / 2 - powerUp.y;
+        const distance = Math.sqrt(distX * distX + distY * distY);
 
         if (distance < player.width / 2 + powerUp.radius) {
             if (powerUp.type === 'jump_boost') {
@@ -182,8 +216,8 @@ function detectCollision() {
                 player.color = 'purple';
                 player.jumpPower = -18 * scale;
                 player.powerUpEndTime = Math.max(player.powerUpEndTime, Date.now() + 10000);
-            } else if (powerUp.type === 'hovering_boost') {
-                player.hovering = true;
+            } else if (powerUp.type === 'Flying_boost') {
+                player.flying = true;
                 player.color = 'orange';
                 player.hoverEndTime = Math.max(player.hoverEndTime, Date.now() + 5000);
             }
@@ -199,17 +233,20 @@ function resetGame() {
     score = 0;
     lastSpawnTime = Date.now();
     lastPowerUpTime = Date.now();
-    lastHoveringBoostTime = Date.now();
+    lastFlyingBoostTime = Date.now();
     powerUpInterval = Math.random() * (10000 - 5000) + 5000;
-    hoveringBoostInterval = Math.random() * (30000 - 5000) + 5000;
+    FlyingBoostInterval = Math.random() * (30000 - 5000) + 5000;
     gamePaused = true;
     restartButton.style.display = 'none';
-    player.x = 50 * scale;
-    player.y = canvas.height - 150 * scale;
-    player.color = 'red';
-    player.jumpPower = -15 * scale;
-    player.poweredUp = false;
-    player.hovering = false;
+    player = {
+        ...player,
+        x: 50 * scale,
+        y: canvas.height - 150 * scale,
+        color: 'red',
+        jumpPower: -15 * scale,
+        poweredUp: false,
+        flying: false
+    };
 }
 
 function increaseDifficulty() {
@@ -227,12 +264,12 @@ function updateScore() {
 function updateBoosts() {
     let boostsText = '';
     if (player.poweredUp) {
-        let jumpTimeLeft = Math.max(0, Math.floor((player.powerUpEndTime - Date.now()) / 1000));
+        const jumpTimeLeft = Math.max(0, Math.floor((player.powerUpEndTime - Date.now()) / 1000));
         boostsText += `Jump Boost: ${jumpTimeLeft}s<br>`;
     }
-    if (player.hovering) {
-        let hoverTimeLeft = Math.max(0, Math.floor((player.hoverEndTime - Date.now()) / 1000));
-        boostsText += `Hovering Boost: ${hoverTimeLeft}s<br>`;
+    if (player.flying) {
+        const hoverTimeLeft = Math.max(0, Math.floor((player.hoverEndTime - Date.now()) / 1000));
+        boostsText += `Flying Boost: ${hoverTimeLeft}s<br>`;
     }
     boostsElement.innerHTML = boostsText;
 }
@@ -252,9 +289,9 @@ function gameLoop() {
         updateScore();
         updateBoosts();
 
-        let currentSpawnInterval = baseSpawnInterval + Math.random() * spawnIntervalVariance;
+        const currentSpawnInterval = baseSpawnInterval + Math.random() * spawnIntervalVariance;
         if (Date.now() - lastSpawnTime > currentSpawnInterval) {
-            spawnObstacle('green');
+            spawnObstacle();
             lastSpawnTime = Date.now();
         }
 
@@ -263,9 +300,9 @@ function gameLoop() {
             powerUpInterval = Math.random() * (10000 - 5000) + 5000;
         }
 
-        if (Date.now() - lastHoveringBoostTime > hoveringBoostInterval) {
-            spawnPowerUp('hovering_boost');
-            hoveringBoostInterval = Math.random() * (30000 - 5000) + 5000;
+        if (Date.now() - lastFlyingBoostTime > FlyingBoostInterval) {
+            spawnPowerUp('Flying_boost');
+            FlyingBoostInterval = Math.random() * (30000 - 5000) + 5000;
         }
 
         increaseDifficulty();
@@ -275,17 +312,14 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-function handleJump() {
-    if (!gamePaused && player.grounded) {
-        player.dy = player.jumpPower;
-    }
-}
-
-function handleClickOrKeyPress() {
-    if (player.hovering) {
+function handleInput() {
+    if (player.flying) {
         player.hoverEndTime = Date.now();
-        player.hovering = false;
+        player.flying = false;
         player.color = 'red';
+    }
+    if (player.grounded) {
+        player.dy = player.jumpPower;
     }
 }
 
@@ -295,15 +329,10 @@ function setSettingsForPlaying() {
     scoreElement.style.display = 'block';
 }
 
-canvas.addEventListener('click', () => {
-    handleClickOrKeyPress();
-    handleJump();
-});
-
+canvas.addEventListener('click', handleInput);
 document.addEventListener('keydown', (event) => {
     if (event.code === 'Space' || event.code === 'ArrowUp') {
-        handleJump();
-        handleClickOrKeyPress();
+        handleInput();
     }
 });
 
