@@ -11,40 +11,57 @@ const playerImageRun4 = new Image();
 const jumpBoostImage = new Image();
 const flyingBoostImage = new Image();
 
-jumpBoostImage.src = 'images/jump-boost.png';
-flyingBoostImage.src = 'images/flying-boost.png';
-
-playerImageFly.src = 'images/player-fly.png';
-playerImageJump.src = 'images/player-jump.png';
-playerImage.src = 'images/player.png';
-
-playerImageRun1.src = 'images/player-run-1.png';
-playerImageRun2.src = 'images/player-run-2.png';
-playerImageRun3.src = 'images/player-run-3.png';
-playerImageRun4.src = 'images/player-run-4.png';
-
 const obstacleImage1 = new Image();
 const obstacleImage2 = new Image();
 const obstacleImage3 = new Image();
 const obstacleImage4 = new Image();
-
-obstacleImage1.src = 'images/obstacle-1.png';
-obstacleImage2.src = 'images/obstacle-2.png';
-obstacleImage3.src = 'images/obstacle-3.png';
-obstacleImage4.src = 'images/obstacle-4.png';
-
 const obstacleImageHit1 = new Image();
-obstacleImageHit1.src = 'images/obstacle-hit-1.png';
+
+const imageSources = {
+    player: 'images/player.png',
+    playerJump: 'images/player-jump.png',
+    playerFly: 'images/player-fly.png',
+    playerRun1: 'images/player-run-1.png',
+    playerRun2: 'images/player-run-2.png',
+    playerRun3: 'images/player-run-3.png',
+    playerRun4: 'images/player-run-4.png',
+    jumpBoost: 'images/jump-boost.png',
+    flyingBoost: 'images/flying-boost.png',
+    obstacle1: 'images/obstacle-1.png',
+    obstacle2: 'images/obstacle-2.png',
+    obstacle3: 'images/obstacle-3.png',
+    obstacle4: 'images/obstacle-4.png',
+    obstacleHit1: 'images/obstacle-hit-1.png',
+};
+
+jumpBoostImage.src = imageSources.jumpBoost;
+flyingBoostImage.src = imageSources.flyingBoost;
+
+playerImageFly.src = imageSources.playerFly;
+playerImageJump.src = imageSources.playerJump;
+playerImage.src = imageSources.player;
+
+playerImageRun1.src = imageSources.playerRun1;
+playerImageRun2.src = imageSources.playerRun2;
+playerImageRun3.src = imageSources.playerRun3;
+playerImageRun4.src = imageSources.playerRun4;
+
+obstacleImage1.src = imageSources.obstacle1;
+obstacleImage2.src = imageSources.obstacle2;
+obstacleImage3.src = imageSources.obstacle3;
+obstacleImage4.src = imageSources.obstacle4;
+
+obstacleImageHit1.src = imageSources.obstacleHit1;
 
 const obstacleImages = [
     obstacleImage1, obstacleImage2, obstacleImage3, obstacleImage4
 ];
 
-let imagesLoaded = false;
-playerImage.onload = () => {
-    if (playerImage.complete) {
-        imagesLoaded = true;
-    }
+const loadAllImages = () => {
+    const imagePromises = Object.entries(imageSources).map(([key, src]) => {
+        return loadImage(src).then(img => ({ key, img }));
+    });
+    return Promise.all(imagePromises);
 };
 
 const canvas = document.getElementById('gameCanvas');
@@ -104,37 +121,35 @@ let flightBaseHeight = 0; // Базовая высота полета
 
 
 function drawPlayer() {
-    if (imagesLoaded) {
-        let imageToDraw;
+    let imageToDraw;
 
-        if (player.flying) {
-            imageToDraw = playerImageFly;
-        } else if (player.grounded) {
-            if (Date.now() - lastAnimationFrameTime > animationInterval) {
-                animationFrame = (animationFrame + 1) % 4;
-                lastAnimationFrameTime = Date.now();
-            }
-
-            switch (animationFrame) {
-                case 0:
-                    imageToDraw = playerImageRun1;
-                    break;
-                case 1:
-                    imageToDraw = playerImageRun2;
-                    break;
-                case 2:
-                    imageToDraw = playerImageRun3;
-                    break;
-                case 3:
-                    imageToDraw = playerImageRun4;
-                    break;
-            }
-        } else {
-            imageToDraw = playerImageJump;
+    if (player.flying) {
+        imageToDraw = playerImageFly;
+    } else if (player.grounded) {
+        if (Date.now() - lastAnimationFrameTime > animationInterval) {
+            animationFrame = (animationFrame + 1) % 4;
+            lastAnimationFrameTime = Date.now();
         }
 
-        ctx.drawImage(imageToDraw, player.x, player.y, player.width, player.height);
+        switch (animationFrame) {
+            case 0:
+                imageToDraw = playerImageRun1;
+                break;
+            case 1:
+                imageToDraw = playerImageRun2;
+                break;
+            case 2:
+                imageToDraw = playerImageRun3;
+                break;
+            case 3:
+                imageToDraw = playerImageRun4;
+                break;
+        }
+    } else {
+        imageToDraw = playerImageJump;
     }
+
+    ctx.drawImage(imageToDraw, player.x, player.y, player.width, player.height);
 }
 
 function updatePlayer() {
