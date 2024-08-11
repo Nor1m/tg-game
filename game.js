@@ -8,6 +8,12 @@ const playerImageRun2 = new Image();
 const playerImageRun3 = new Image();
 const playerImageRun4 = new Image();
 
+const jumpBoostImage = new Image();
+const flyingBoostImage = new Image();
+
+jumpBoostImage.src = 'images/jump-boost.png';
+flyingBoostImage.src = 'images/flying-boost.png';
+
 playerImageFly.src = 'images/player-fly.png';
 playerImageJump.src = 'images/player-jump.png';
 playerImage.src = 'images/player.png';
@@ -18,7 +24,32 @@ playerImageRun2.src = 'images/player-run-2.png';
 playerImageRun3.src = 'images/player-run-3.png';
 playerImageRun4.src = 'images/player-run-4.png';
 
+const obstacleImage1 = new Image();
+const obstacleImage2 = new Image();
+const obstacleImage3 = new Image();
+const obstacleImage4 = new Image();
+
+obstacleImage1.src = 'images/obstacle-1.png';
+obstacleImage2.src = 'images/obstacle-2.png';
+obstacleImage3.src = 'images/obstacle-3.png';
+obstacleImage4.src = 'images/obstacle-4.png';
+
+const obstacleImages = [
+    obstacleImage1, obstacleImage2, obstacleImage3, obstacleImage4
+];
+
 let imagesLoaded = false;
+let imagesToLoad = obstacleImages.length;
+
+obstacleImages.forEach(image => {
+    image.onload = () => {
+        imagesToLoad--;
+        if (imagesToLoad === 0) {
+            imagesLoaded = true;
+        }
+    };
+});
+
 playerImage.onload = () => {
     if (obstacleImage.complete) {
         imagesLoaded = true;
@@ -42,12 +73,13 @@ canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 const scale = Math.min(canvas.width / 800, canvas.height / 600);
+const groundLevel = canvas.height - 20 * scale;
 
 let player = {
     x: 50 * scale,
-    y: canvas.height - 150 * scale,
-    width: 50 * scale,
-    height: 50 * scale,
+    y: groundLevel - 150 * scale,
+    width: 100 * scale,
+    height: 100 * scale,
     dy: 0,
     gravity: 0.35 * scale,
     jumpPower: -15 * scale,
@@ -124,7 +156,6 @@ function updatePlayer() {
     if (player.flying && Date.now() < player.hoverEndTime) {
         player.dy = 0;
 
-        // Колебания вокруг высоты `flightBaseHeight`
         const timeElapsed = Date.now() - flightStartTime;
         player.y = flightBaseHeight + flightAmplitude * Math.sin(flightFrequency * timeElapsed);
     } else {
@@ -132,8 +163,8 @@ function updatePlayer() {
         player.dy += player.gravity;
         player.y += player.dy;
 
-        if (player.y + player.height >= canvas.height) {
-            player.y = canvas.height - player.height;
+        if (player.y + player.height >= groundLevel) {
+            player.y = groundLevel - player.height;
             player.dy = 0;
             player.grounded = true;
         } else {
@@ -149,16 +180,19 @@ function updatePlayer() {
 }
 
 function spawnObstacle() {
-    const height = player.height;
     const lastObstacle = obstacles[obstacles.length - 1];
     const obstacleX = lastObstacle ? lastObstacle.x + lastObstacle.width + minObstacleDistance : canvas.width + minObstacleDistance;
 
+    const randomImageIndex = Math.floor(Math.random() * obstacleImages.length);
+    const chosenImage = obstacleImages[randomImageIndex];
+
     obstacles.push({
         x: obstacleX,
-        y: canvas.height - height,
-        width: 50 * scale,
-        height: height,
-        speed: gameSpeed
+        y: groundLevel - 100 * scale,
+        width: 100 * scale,
+        height: 100 * scale,
+        speed: gameSpeed,
+        image: chosenImage
     });
 }
 
@@ -169,10 +203,10 @@ function spawnPowerUp(type) {
 
     switch (type) {
         case 'jump_boost':
-            powerUpY = canvas.height - player.height * 3 + (Math.random() * player.height - player.height / 2);
+            powerUpY = groundLevel - player.height * 3 + (Math.random() * player.height - player.height / 2);
             break;
         case 'Flying_boost':
-            powerUpY = canvas.height - player.height * 5 + (Math.random() * player.height - player.height / 2);
+            powerUpY = groundLevel - player.height * 5 + (Math.random() * player.height - player.height / 2);
             break;
     }
 
@@ -196,20 +230,24 @@ function spawnPowerUp(type) {
 }
 
 function drawObstacles() {
-    if (imagesLoaded) {
-        obstacles.forEach(obstacle => {
-            ctx.drawImage(obstacleImage, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
-        });
-    }
+    obstacles.forEach(obstacle => {
+        ctx.drawImage(obstacle.image, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+    });
 }
 
 function drawPowerUps() {
     powerUps.forEach(powerUp => {
-        ctx.fillStyle = powerUp.type === 'jump_boost' ? 'purple' : 'orange';
-        ctx.beginPath();
-        ctx.arc(powerUp.x, powerUp.y, powerUp.radius, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.closePath();
+        let imageToDraw;
+
+        if (powerUp.type === 'jump_boost') {
+            imageToDraw = jumpBoostImage;
+        } else if (powerUp.type === 'Flying_boost') {
+            imageToDraw = flyingBoostImage;
+        }
+
+        if (imageToDraw) {
+            ctx.drawImage(imageToDraw, powerUp.x - powerUp.radius, powerUp.y - powerUp.radius, powerUp.radius * 2, powerUp.radius * 2);
+        }
     });
 }
 
@@ -388,5 +426,4 @@ startButton.addEventListener('click', () => {
     gameLoop();
 });
 
-// Инициализируем начальное состояние игры
 resetGame();
