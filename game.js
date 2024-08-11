@@ -17,7 +17,6 @@ flyingBoostImage.src = 'images/flying-boost.png';
 playerImageFly.src = 'images/player-fly.png';
 playerImageJump.src = 'images/player-jump.png';
 playerImage.src = 'images/player.png';
-obstacleImage.src = 'images/obstacle.png';
 
 playerImageRun1.src = 'images/player-run-1.png';
 playerImageRun2.src = 'images/player-run-2.png';
@@ -34,29 +33,15 @@ obstacleImage2.src = 'images/obstacle-2.png';
 obstacleImage3.src = 'images/obstacle-3.png';
 obstacleImage4.src = 'images/obstacle-4.png';
 
+const obstacleImageHit1 = new Image();
+obstacleImageHit1.src = 'images/obstacle-hit-1.png';
+
 const obstacleImages = [
     obstacleImage1, obstacleImage2, obstacleImage3, obstacleImage4
 ];
 
 let imagesLoaded = false;
-let imagesToLoad = obstacleImages.length;
-
-obstacleImages.forEach(image => {
-    image.onload = () => {
-        imagesToLoad--;
-        if (imagesToLoad === 0) {
-            imagesLoaded = true;
-        }
-    };
-});
-
 playerImage.onload = () => {
-    if (obstacleImage.complete) {
-        imagesLoaded = true;
-    }
-};
-
-obstacleImage.onload = () => {
     if (playerImage.complete) {
         imagesLoaded = true;
     }
@@ -192,7 +177,9 @@ function spawnObstacle() {
         width: 100 * scale,
         height: 100 * scale,
         speed: gameSpeed,
-        image: chosenImage
+        image: chosenImage,
+        hitState: 'normal',
+        hitImage: null
     });
 }
 
@@ -231,7 +218,8 @@ function spawnPowerUp(type) {
 
 function drawObstacles() {
     obstacles.forEach(obstacle => {
-        ctx.drawImage(obstacle.image, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        const imageToDraw = obstacle.hitState === 'hit' && obstacle.hitImage ? obstacle.hitImage : obstacle.image;
+        ctx.drawImage(imageToDraw, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
     });
 }
 
@@ -268,21 +256,31 @@ function updatePowerUps() {
 }
 
 function detectCollision() {
-    obstacles.some(obstacle => {
-        const collisionFromSide = (
-            player.x < obstacle.x + obstacle.width &&
-            player.x + player.width > obstacle.x &&
-            player.y < obstacle.y + obstacle.height &&
-            player.y + player.height > obstacle.y
-        );
+    const collisionThreshold = 0.5; // Коэффициент, определяющий уровень соприкосновения
 
-        if (collisionFromSide) {
-            gamePaused = true;
-            restartButton.style.display = 'block';
-            return true;
+    obstacles.some(obstacle => {
+        const horizontalOverlap = Math.max(0, Math.min(player.x + player.width, obstacle.x + obstacle.width) - Math.max(player.x, obstacle.x));
+        const verticalOverlap = Math.max(0, Math.min(player.y + player.height, obstacle.y + obstacle.height) - Math.max(player.y, obstacle.y));
+
+        if (horizontalOverlap > 0 && verticalOverlap > 0) {
+            // Определяем процент перекрытия или используем другие критерии
+            const obstacleArea = obstacle.width * obstacle.height;
+            const overlapArea = horizontalOverlap * verticalOverlap;
+            const overlapPercentage = overlapArea / obstacleArea;
+
+            if (overlapPercentage >= collisionThreshold) {
+                if (obstacle.hitState === 'normal') {
+                    obstacle.hitImage = obstacleImageHit1;
+                    obstacle.hitState = 'hit';
+                }
+                gamePaused = true;
+                restartButton.style.display = 'block';
+                return true;
+            }
         }
         return false;
     });
+
 
     powerUps.forEach((powerUp, index) => {
         const distX = player.x + player.width / 2 - powerUp.x;
