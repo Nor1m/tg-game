@@ -69,7 +69,8 @@ const ctx = canvas.getContext('2d');
 const restartButton = document.getElementById('restartButton');
 const startButton = document.getElementById('startButton');
 const scoreElement = document.getElementById('score');
-const boostsElement = document.getElementById('boosts');
+const jumpingBoostsElement = document.getElementById('jumping-boosts');
+const flyingBoostsElement = document.getElementById('flying-boosts');
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -355,16 +356,19 @@ function updateScore() {
 }
 
 function updateBoosts() {
-    let boostsText = '';
     if (player.poweredUp) {
         const jumpTimeLeft = Math.max(0, Math.floor((player.powerUpEndTime - Date.now()) / 1000));
-        boostsText += `Jump Boost: ${jumpTimeLeft}s<br>`;
+        jumpingBoostsElement.innerHTML = `Jumping Boost: ${jumpTimeLeft}s<br>`;
+    } else {
+        jumpingBoostsElement.innerHTML = '';
     }
+
     if (player.flying) {
         const hoverTimeLeft = Math.max(0, Math.floor((player.hoverEndTime - Date.now()) / 1000));
-        boostsText += `Flying Boost: ${hoverTimeLeft}s<br>`;
+        flyingBoostsElement.innerHTML = `Flying Boost: ${hoverTimeLeft}s<br>`;
+    } else {
+        flyingBoostsElement.innerHTML = '';
     }
-    boostsElement.innerHTML = boostsText;
 }
 
 function gameLoop() {

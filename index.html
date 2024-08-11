@@ -42,18 +42,25 @@
             top: 20px;
             left: 20px;
             font-size: 24px;
-            color: black;
+            color: #e8e0ff;
             font-family: Arial, sans-serif;
             z-index: 10;
         }
-        #boosts {
+        .boosts_block {
             position: absolute;
             top: 60px;
             left: 20px;
-            font-size: 18px;
-            color: black;
-            font-family: Arial, sans-serif;
             z-index: 10;
+        }
+        .boosts {
+            font-size: 18px;
+            font-family: Arial, sans-serif;
+        }
+        #flying-boosts {
+            color: #ffbf7a;
+        }
+        #jumping-boosts {
+            color: #d27aff;
         }
         body {
             background-image: url(images/wallpaper.png);
@@ -68,7 +75,10 @@
 <button id="restartButton">Restart</button>
 <button id="startButton">Play</button>
 <div id="score">Score: 0</div>
-<div id="boosts"></div>
+<div class="boosts_block">
+    <div id="jumping-boosts" class="boosts"></div>
+    <div id="flying-boosts" class="boosts"></div>
+</div>
 <script src="game.js?v=5"></script>
 </body>
 </html>
