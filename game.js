@@ -3,10 +3,20 @@ const obstacleImage = new Image();
 const playerImageJump = new Image();
 const playerImageFly = new Image();
 
+const playerImageRun1 = new Image();
+const playerImageRun2 = new Image();
+const playerImageRun3 = new Image();
+const playerImageRun4 = new Image();
+
 playerImageFly.src = 'images/player-fly.png';
 playerImageJump.src = 'images/player-jump.png';
 playerImage.src = 'images/player.png';
 obstacleImage.src = 'images/obstacle.png';
+
+playerImageRun1.src = 'images/player-run-1.png';
+playerImageRun2.src = 'images/player-run-2.png';
+playerImageRun3.src = 'images/player-run-3.png';
+playerImageRun4.src = 'images/player-run-4.png';
 
 let imagesLoaded = false;
 playerImage.onload = () => {
@@ -66,15 +76,42 @@ let lastFlyingBoostTime = Date.now();
 let score = 0;
 let gamePaused = true;
 
+let animationFrame = 0;
+let animationInterval = 100; // Интервал переключения кадров (в миллисекундах)
+let lastAnimationFrameTime = Date.now();
+
+const flightAmplitude = 10 * scale; // амплитуда, 10 пикселей
+const flightFrequency = 0.005; // частота, чем меньше значение, тем медленнее колебание
+let flightStartTime = 0; // Время начала полета
+let flightBaseHeight = 0; // Базовая высота полета
+
+
 function drawPlayer() {
     if (imagesLoaded) {
-
         let imageToDraw;
 
         if (player.flying) {
             imageToDraw = playerImageFly;
         } else if (player.grounded) {
-            imageToDraw = playerImage;
+            if (Date.now() - lastAnimationFrameTime > animationInterval) {
+                animationFrame = (animationFrame + 1) % 4;
+                lastAnimationFrameTime = Date.now();
+            }
+
+            switch (animationFrame) {
+                case 0:
+                    imageToDraw = playerImageRun1;
+                    break;
+                case 1:
+                    imageToDraw = playerImageRun2;
+                    break;
+                case 2:
+                    imageToDraw = playerImageRun3;
+                    break;
+                case 3:
+                    imageToDraw = playerImageRun4;
+                    break;
+            }
         } else {
             imageToDraw = playerImageJump;
         }
@@ -86,6 +123,10 @@ function drawPlayer() {
 function updatePlayer() {
     if (player.flying && Date.now() < player.hoverEndTime) {
         player.dy = 0;
+
+        // Колебания вокруг высоты `flightBaseHeight`
+        const timeElapsed = Date.now() - flightStartTime;
+        player.y = flightBaseHeight + flightAmplitude * Math.sin(flightFrequency * timeElapsed);
     } else {
         player.flying = false;
         player.dy += player.gravity;
@@ -220,6 +261,7 @@ function detectCollision() {
                 player.flying = true;
                 player.color = 'orange';
                 player.hoverEndTime = Math.max(player.hoverEndTime, Date.now() + 5000);
+                flightBaseHeight = player.y;
             }
             powerUps.splice(index, 1);
         }
