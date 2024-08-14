@@ -7,34 +7,22 @@
     <style>
         body { margin: 0; overflow: hidden; }
         canvas { display: block; margin: 0 auto; }
-        #startButton {
+        .btn {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
             padding: 15px 30px;
-            background: #ff4757;
+            background: #333b73;
             color: white;
             border: none;
             font-size: 24px;
             cursor: pointer;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            box-shadow: 0px 5px 0px rgb(51 59 115 / 74%);
         }
         #restartButton {
             display: none;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 15px 30px;
-            background: #ff4757;
-            color: white;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
         #score {
             display: none;
@@ -68,17 +56,28 @@
             background-repeat: no-repeat;
             background-position: bottom;
         }
+        * {
+            font-family: monospace !important;
+        }
+        .footer {
+            color: rgb(255 255 255 / 8%);
+            position: fixed;
+            bottom: 10px;
+            width: 100%;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
 <canvas id="gameCanvas"></canvas>
-<button id="restartButton">Restart</button>
-<button id="startButton">Play</button>
+<button id="restartButton" class="btn">Restart</button>
+<button id="startButton" class="btn">Play</button>
 <div id="score">Score: 0</div>
 <div class="boosts_block">
     <div id="jumping-boosts" class="boosts"></div>
     <div id="flying-boosts" class="boosts"></div>
 </div>
-<script src="game.js?v=8"></script>
+<div class="footer">v 0.9</div>
+<script src="game.js?v=0.9"></script>
 </body>
 </html>

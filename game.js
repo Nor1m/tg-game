@@ -289,7 +289,7 @@ function detectCollision() {
                     obstacle.hitImage = obstacleImageHit1;
                     obstacle.hitState = 'hit';
                 }
-                submitScore(Math.floor(score));
+                submitScore(score);
                 gamePaused = true;
                 restartButton.style.display = 'block';
                 return true;
