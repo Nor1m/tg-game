@@ -69,7 +69,7 @@ bot.on("callback_query", function (query) {
     } else {
         queries[query.id] = query;
 
-        const gameUrl = `https://nor1m.github.io/tg-game/?userId=${query.from.id}&messageId=${query.message?.message_id}&inlineMessageId=${query.inline_message_id}`;
+        const gameUrl = `http://31.129.108.97:5000/?userId=${query.from.id}&messageId=${query.message?.message_id}&inlineMessageId=${query.inline_message_id}`;
 
         console.error('gameUrl', gameUrl);
 
