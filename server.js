@@ -13,10 +13,22 @@ const queries = {};
 server.use(express.static(path.join(__dirname, 'front')));
 server.use(bodyParser.json());
 
+//let messageId;
+
+bot.onText(/start|game/, (msg) => {
+    bot.sendGame(msg.chat.id, gameName)
+        .then((sentMessage) => {
+            //messageId = sentMessage.message_id;
+            //console.error('messageId', messageId);
+        })
+        .catch(err => {
+            console.error('Failed to send game:', err);
+            bot.sendMessage(msg.chat.id, "Sorry, the game could not be started.");
+        });
+});
+
 server.get("/submit-score", (req, res) => {
     const {userId, score, messageId, inlineMessageId} = req.query;
-
-    console.error('submit-score', userId, score, messageId, inlineMessageId);
 
     if (!userId || typeof score === "undefined") {
         return res.status(400).send("Invalid data");
@@ -28,7 +40,7 @@ server.get("/submit-score", (req, res) => {
         // force: true,
     };
 
-    if (messageId) {
+    if (messageId !== 'undefined') {
         options.chat_id = userId;
         options.message_id = messageId;
     } else if (inlineMessageId) {
@@ -46,20 +58,6 @@ server.get("/submit-score", (req, res) => {
 // Команда /help
 bot.onText(/help/, (msg) => {
     bot.sendMessage(msg.from.id, "This is the Jumping game. Write /game to start playing.");
-});
-
-let messageId;
-
-bot.onText(/start|game/, (msg) => {
-    bot.sendGame(msg.chat.id, gameName)
-        .then((sentMessage) => {
-            messageId = sentMessage.message_id;
-            console.error('messageId', messageId);
-        })
-        .catch(err => {
-            console.error('Failed to send game:', err);
-            bot.sendMessage(msg.chat.id, "Sorry, the game could not be started.");
-        });
 });
 
 // Обработка callback_query

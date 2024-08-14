@@ -508,6 +508,8 @@ function submitScore(score) {
         return;
     }
 
+    score = Math.floor(score);
+
     const queryString = new URLSearchParams({
         userId,
         score,
