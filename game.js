@@ -289,6 +289,7 @@ function detectCollision() {
                     obstacle.hitImage = obstacleImageHit1;
                     obstacle.hitState = 'hit';
                 }
+                submitScore(Math.floor(score));
                 gamePaused = true;
                 restartButton.style.display = 'block';
                 return true;
@@ -344,7 +345,7 @@ function resetGame() {
 }
 
 function increaseDifficulty() {
-    gameSpeed += 0.0001 * scale;
+    gameSpeed += 0.001 * scale;
     baseSpawnInterval = Math.max(
         3000 - Math.floor(score * 10),
         minObstacleSpawnInterval
@@ -442,5 +443,35 @@ startButton.addEventListener('click', () => {
     setSettingsForPlaying();
     gameLoop();
 });
+
+function submitScore(score) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId');
+    const messageId = urlParams.get('messageId');
+    const inlineMessageId = urlParams.get('inlineMessageId');
+
+    if (!userId) {
+        console.error('User ID not found in URL parameters.');
+        return;
+    }
+
+    const queryString = new URLSearchParams({
+        userId,
+        score,
+        messageId,
+        inlineMessageId,
+    }).toString();
+
+    fetch(`/submit-score?${queryString}`).then(response => {
+        if (response.ok) {
+            console.log('Score submitted successfully');
+        } else {
+            console.error('Failed to submit score');
+        }
+    }).catch(error => {
+        console.error('Error submitting score:', error);
+    });
+}
+
 
 resetGame();
