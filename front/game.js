@@ -78,10 +78,6 @@ canvas.height = window.innerHeight;
 const scale = Math.min(canvas.width / 800, canvas.height / 600);
 const groundLevel = canvas.height - 20 * scale;
 
-const boom_sound = document.getElementById('boom-sound');
-const boost_sound = document.getElementById('boost-sound');
-const flying_sound = document.getElementById('flying-sound');
-
 const sounds = {
     boom: 'sounds/boom.mp3',
     boost: 'sounds/boost.mp3',
