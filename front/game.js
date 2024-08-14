@@ -59,7 +59,7 @@ const obstacleImages = [
 
 const loadAllImages = () => {
     const imagePromises = Object.entries(imageSources).map(([key, src]) => {
-        return loadImage(src).then(img => ({ key, img }));
+        return loadImage(src).then(img => ({key, img}));
     });
     return Promise.all(imagePromises);
 };
