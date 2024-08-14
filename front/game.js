@@ -82,6 +82,55 @@ const boom_sound = document.getElementById('boom-sound');
 const boost_sound = document.getElementById('boost-sound');
 const flying_sound = document.getElementById('flying-sound');
 
+const sounds = {
+    boom: 'sounds/boom.mp3',
+    boost: 'sounds/boost.mp3',
+    flying: 'sounds/flying.mp3'
+};
+
+const loadSound = (src) => {
+    return new Promise((resolve, reject) => {
+        const audio = new Audio(src);
+        audio.addEventListener('canplaythrough', () => resolve(audio), { once: true });
+        audio.addEventListener('error', reject, { once: true });
+    });
+};
+
+const loadAllSounds = () => {
+    const soundPromises = Object.entries(sounds).map(([key, src]) => {
+        return loadSound(src).then(sound => ({ key, sound }));
+    });
+    return Promise.all(soundPromises);
+};
+
+let loadedSounds = {};
+
+loadAllSounds().then(soundList => {
+    soundList.forEach(({ key, sound }) => {
+        loadedSounds[key] = sound;
+    });
+}).catch(error => {
+    console.error('Error loading sounds:', error);
+});
+
+function playBoomSound() {
+    if (loadedSounds.boom) {
+        loadedSounds.boom.play();
+    }
+}
+
+function playBoostSound() {
+    if (loadedSounds.boost) {
+        loadedSounds.boost.play();
+    }
+}
+
+function playFlyingSound() {
+    if (loadedSounds.flying) {
+        loadedSounds.flying.play();
+    }
+}
+
 let player = {
     x: 50 * scale,
     y: groundLevel - 150 * scale,
@@ -479,22 +528,6 @@ function submitScore(score) {
     }).catch(error => {
         console.error('Error submitting score:', error);
     });
-}
-
-function playBoomSound() {
-    boom_sound.play();
-}
-
-function playBoostSound() {
-    boost_sound.play();
-}
-
-function playFlyingSound() {
-    flying_sound.play();
-}
-
-function stopFlyingSound() {
-    flying_sound.play();
 }
 
 resetGame();
