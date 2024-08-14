@@ -78,6 +78,10 @@ canvas.height = window.innerHeight;
 const scale = Math.min(canvas.width / 800, canvas.height / 600);
 const groundLevel = canvas.height - 20 * scale;
 
+const boom_sound = document.getElementById('boom-sound');
+const boost_sound = document.getElementById('boost-sound');
+const flying_sound = document.getElementById('flying-sound');
+
 let player = {
     x: 50 * scale,
     y: groundLevel - 150 * scale,
@@ -289,6 +293,7 @@ function detectCollision() {
                     obstacle.hitImage = obstacleImageHit1;
                     obstacle.hitState = 'hit';
                 }
+                playBoomSound();
                 submitScore(score);
                 gamePaused = true;
                 restartButton.style.display = 'block';
@@ -306,11 +311,14 @@ function detectCollision() {
 
         if (distance < player.width / 2 + powerUp.radius) {
             if (powerUp.type === 'jump_boost') {
+                playBoostSound();
                 player.poweredUp = true;
                 player.color = 'purple';
                 player.jumpPower = -18 * scale;
                 player.powerUpEndTime = Math.max(player.powerUpEndTime, Date.now() + 10000);
             } else if (powerUp.type === 'Flying_boost') {
+                playBoostSound();
+                playFlyingSound();
                 player.flying = true;
                 player.color = 'orange';
                 player.hoverEndTime = Math.max(player.hoverEndTime, Date.now() + 5000);
@@ -473,5 +481,20 @@ function submitScore(score) {
     });
 }
 
+function playBoomSound() {
+    boom_sound.play();
+}
+
+function playBoostSound() {
+    boost_sound.play();
+}
+
+function playFlyingSound() {
+    flying_sound.play();
+}
+
+function stopFlyingSound() {
+    flying_sound.play();
+}
 
 resetGame();
