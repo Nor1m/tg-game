@@ -59,7 +59,7 @@ const obstacleImages = [
 let loadedImages = {};
 
 loadAllImages().then(images => {
-    images.forEach(({ key, img }) => {
+    images.forEach(({key, img}) => {
         loadedImages[key] = img;
     });
 
@@ -111,9 +111,10 @@ function loadImage(src) {
         img.src = src;
     });
 }
+
 function loadAllImages() {
     const imagePromises = Object.entries(imageSources).map(([key, src]) => {
-        return loadImage(src).then(img => ({ key, img }));
+        return loadImage(src).then(img => ({key, img}));
     });
     return Promise.all(imagePromises);
 }
@@ -121,14 +122,14 @@ function loadAllImages() {
 const loadSound = (src) => {
     return new Promise((resolve, reject) => {
         const audio = new Audio(src);
-        audio.addEventListener('canplaythrough', () => resolve(audio), { once: true });
-        audio.addEventListener('error', reject, { once: true });
+        audio.addEventListener('canplaythrough', () => resolve(audio), {once: true});
+        audio.addEventListener('error', reject, {once: true});
     });
 };
 
 const loadAllSounds = () => {
     const soundPromises = Object.entries(sounds).map(([key, src]) => {
-        return loadSound(src).then(sound => ({ key, sound }));
+        return loadSound(src).then(sound => ({key, sound}));
     });
     return Promise.all(soundPromises);
 };
@@ -136,7 +137,7 @@ const loadAllSounds = () => {
 let loadedSounds = {};
 
 loadAllSounds().then(soundList => {
-    soundList.forEach(({ key, sound }) => {
+    soundList.forEach(({key, sound}) => {
         loadedSounds[key] = sound;
     });
 }).catch(error => {
@@ -514,7 +515,7 @@ function setSettingsForPlaying() {
     scoreElement.style.display = 'block';
 }
 
-canvas.addEventListener('click', handleInput);
+canvas.addEventListener('touchstart', handleInput);
 document.addEventListener('keydown', (event) => {
     if (event.code === 'Space' || event.code === 'ArrowUp') {
         handleInput();

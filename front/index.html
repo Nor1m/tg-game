@@ -5,8 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jumping Game</title>
     <style>
-        body { margin: 0; overflow: hidden; }
-        canvas { display: block; margin: 0 auto; }
+        body {
+            margin: 0;
+            overflow: hidden;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
         .btn {
             position: absolute;
             top: 50%;
@@ -21,9 +29,11 @@
             border-radius: 5px;
             box-shadow: 0px 5px 0px rgb(51 59 115 / 74%);
         }
+
         #restartButton {
             display: none;
         }
+
         #score {
             display: none;
             position: absolute;
@@ -34,31 +44,40 @@
             font-family: Arial, sans-serif;
             z-index: 10;
         }
+
         .boosts_block {
             position: absolute;
             top: 60px;
             left: 20px;
             z-index: 10;
         }
+
         .boosts {
             font-size: 18px;
             font-family: Arial, sans-serif;
         }
+
         #flying-boosts {
             color: #ffbf7a;
         }
+
         #jumping-boosts {
             color: #d27aff;
         }
+
         body {
             background-image: url(images/wallpaper.png);
             background-size: auto;
             background-repeat: no-repeat;
             background-position: bottom;
         }
+
         * {
+            user-select: none;
+            -webkit-user-select: none;
             font-family: monospace !important;
         }
+
         .footer {
             color: rgb(255 255 255 / 1%);
             position: fixed;
@@ -80,7 +99,7 @@
     <div id="jumping-boosts" class="boosts"></div>
     <div id="flying-boosts" class="boosts"></div>
 </div>
-<div class="footer">v 0.9.2</div>
-<script src="game.js?v=0.9.2"></script>
+<div class="footer">v 0.9.3</div>
+<script src="game.js?v=0.9.3"></script>
 </body>
 </html>
