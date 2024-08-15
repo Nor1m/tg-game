@@ -1,4 +1,5 @@
 const playerImage = new Image();
+const playerImageDead = new Image();
 const playerImageJump = new Image();
 const playerImageFly = new Image();
 
@@ -24,6 +25,7 @@ const fireBulletImage = new Image();
 
 const imageSources = {
     player: 'images/player.png',
+    playerDead: 'images/player-dead.png',
     playerJump: 'images/player-jump.png',
     playerFly: 'images/player-fly.png',
     playerRun1: 'images/player-run-1.png',
@@ -59,6 +61,7 @@ loadAllImages().then(images => {
     // Обновите ссылки на изображения, чтобы использовать загруженные изображения
     playerImage.src = loadedImages.player.src;
     playerImageJump.src = loadedImages.playerJump.src;
+    playerImageDead.src = loadedImages.playerDead.src;
     playerImageFly.src = loadedImages.playerFly.src;
     playerImageRun1.src = loadedImages.playerRun1.src;
     playerImageRun2.src = loadedImages.playerRun2.src;
@@ -96,6 +99,7 @@ const jumpingBoostsElement = document.getElementById('jumping-boosts');
 const flyingBoostsElement = document.getElementById('flying-boosts');
 const shieldBoostsElement = document.getElementById('shield-boosts');
 const fireBoostsElement = document.getElementById('fire-boosts');
+const boostsElements = document.getElementsByClassName('boosts');
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -106,7 +110,8 @@ const groundLevel = canvas.height - 20 * scale;
 const sounds = {
     boom: 'sounds/boom.mp3',
     boost: 'sounds/boost.mp3',
-    flying: 'sounds/flying.mp3'
+    flying: 'sounds/flying.mp3',
+    fire: 'sounds/fire.mp3'
 };
 
 function loadImage(src) {
@@ -168,7 +173,22 @@ function playFlyingSound() {
     }
 }
 
-let player = {
+function playFireSound() {
+    if (loadedSounds.fire) {
+        loadedSounds.fire.play();
+    }
+}
+
+function pauseSounds() {
+    if (loadedSounds.fire) {
+        loadedSounds.fire.pause();
+    }
+    if (loadedSounds.flying) {
+        loadedSounds.flying.pause();
+    }
+}
+
+const player_default = {
     x: 50 * scale,
     y: groundLevel - 150 * scale,
     width: 100 * scale,
@@ -181,8 +201,11 @@ let player = {
     poweredUp: false,
     powerUpEndTime: 0,
     flying: false,
-    hoverEndTime: 0
+    hoverEndTime: 0,
+    dead: false
 };
+
+let player = player_default;
 
 let obstacles = [];
 let powerUps = [];
@@ -191,10 +214,17 @@ let powerUpSpeed = 4 * scale;
 let baseSpawnInterval = 3000;
 const minObstacleSpawnInterval = 1000;
 const spawnIntervalVariance = 1000;
-let powerUpInterval = Math.random() * 10000;
-let flyingBoostInterval = Math.random() * 30000;
-let shieldBoostInterval = Math.random() * 55000;
-let fireBoostInterval = Math.random() * 80000;
+
+let powerUpInterval = Math.random() * 5000;
+let flyingBoostInterval = Math.random() * 5000;
+let shieldBoostInterval = Math.random() * 5000;
+let fireBoostInterval = Math.random() * 5000;
+
+const powerUpIntervalDefault = powerUpInterval;
+const flyingBoostIntervalDefault = flyingBoostInterval;
+const shieldBoostIntervalDefault = shieldBoostInterval;
+const fireBoostIntervalDefault = fireBoostInterval;
+
 const minObstacleDistance = player.width * 20;
 const minPowerUpDistance = player.width * 30;
 let lastSpawnTime = Date.now();
@@ -224,7 +254,9 @@ function drawPlayer() {
         lastAnimationFrameTime = Date.now();
     }
 
-    if (fireBoostActive && Date.now() < fireBoostEndTime) {
+    if (player.dead) {
+        imageToDraw = loadedImages.playerDead;
+    } else if (fireBoostActive && Date.now() < fireBoostEndTime) {
 
         switch (animationFrame) {
             default:
@@ -264,6 +296,7 @@ function drawPlayer() {
 
 function shootBullet() {
     if (fireBoostActive && Date.now() < fireBoostEndTime) {
+        playFireSound();
         bullets.push({
             x: player.x + player.width,
             y: player.y + player.height / 2 - 22.5,
@@ -293,8 +326,11 @@ function updateBullets() {
                 bullet.x + bullet.width > obstacle.x &&
                 bullet.y < obstacle.y + obstacle.height &&
                 bullet.y + bullet.height > obstacle.y) {
+
                 // Меняем изображение на поврежденное
                 obstacle.image = obstacleImageHit1;
+
+                playBoomSound();
 
                 // Удаляем пулю
                 bullets.splice(bullets.indexOf(bullet), 1);
@@ -335,7 +371,6 @@ function updatePlayer() {
 
         if (player.poweredUp && Date.now() > player.powerUpEndTime) {
             player.poweredUp = false;
-            player.color = 'red';
             player.jumpPower = -15 * scale;
         }
     }
@@ -455,6 +490,19 @@ function updatePowerUps() {
     powerUps = powerUps.filter(powerUp => powerUp.x + powerUp.radius > 0);
 }
 
+function onFail() {
+    Array.from(boostsElements).forEach(element => {
+        element.innerHTML = '';
+    });
+    player.dead = true;
+    gamePaused = true;
+    fireBoostActive = false;
+    pauseSounds();
+    playBoomSound();
+    submitScore(score);
+    restartButton.style.display = 'block';
+}
+
 function detectCollision() {
     const collisionThreshold = 0.4; // Коэффициент, определяющий уровень соприкосновения
 
@@ -464,8 +512,6 @@ function detectCollision() {
         const horizontalOverlap = Math.max(0, Math.min(player.x + player.width, obstacle.x + obstacle.width) - Math.max(player.x, obstacle.x));
         const verticalOverlap = Math.max(0, Math.min(player.y + player.height, obstacle.y + obstacle.height) - Math.max(player.y, obstacle.y));
 
-
-        // Проверяем, активен ли щит и что препятствия в его зоне
         if (shieldBoostEndTime <= Date.now()) {
 
             if (horizontalOverlap > 0 && verticalOverlap > 0) {
@@ -481,10 +527,7 @@ function detectCollision() {
                             obstacle.hitImage = obstacleImageHit1;
                             obstacle.hitState = 'hit';
                         }
-                        playBoomSound();
-                        submitScore(score);
-                        gamePaused = true;
-                        restartButton.style.display = 'block';
+                        onFail();
                         return true;
                     }
                 }
@@ -516,18 +559,20 @@ function detectCollision() {
             if (powerUp.type === 'jump_boost') {
                 playBoostSound();
                 player.poweredUp = true;
-                player.color = 'purple';
                 player.jumpPower = -18 * scale;
                 player.powerUpEndTime = Math.max(player.powerUpEndTime, Date.now() + 10000);
             } else if (powerUp.type === 'flying_boost') {
                 playBoostSound();
+                fireBoostActive = false;
+                player.poweredUp = false;
                 playFlyingSound();
                 player.flying = true;
-                player.color = 'orange';
                 player.hoverEndTime = Math.max(player.hoverEndTime, Date.now() + 5000);
                 flightBaseHeight = player.y;
             } else if (powerUp.type === 'shield_boost') {
                 playBoostSound();
+                fireBoostActive = false;
+                player.poweredUp = false;
                 shieldBoostEndTime = Date.now() + 10000;
             } else if (powerUp.type === 'fire_boost') {
                 playBoostSound();
@@ -540,9 +585,8 @@ function detectCollision() {
 
 function activateFireBoost() {
     fireBoostActive = true;
-    fireBoostEndTime = Date.now() + 5000; // Активируем бонус на 5 секунд
+    fireBoostEndTime = Date.now() + 50000; // Активируем бонус на 5 секунд
 
-    // Устанавливаем таймер для стрельбы
     fireInterval = setInterval(() => {
         if (Date.now() < fireBoostEndTime) {
             shootBullet();
@@ -589,22 +633,31 @@ function resetGame() {
     powerUps = [];
     gameSpeed = 5 * scale;
     score = 0;
+
+    Array.from(boostsElements).forEach(element => {
+        element.innerHTML = '';
+    });
+
+    fireBoostActive = false;
+    fireBoostEndTime = 0;
+    clearInterval(fireInterval);
+    bullets = [];
+
     lastSpawnTime = Date.now();
     lastPowerUpTime = Date.now();
     lastFlyingBoostTime = Date.now();
-    powerUpInterval = Math.random() * (10000 - 5000) + 5000;
-    flyingBoostInterval = Math.random() * (30000 - 5000) + 5000;
+    lastShieldBoostTime = Date.now();
+    lastFireBoostTime = Date.now();
+
+    powerUpInterval = powerUpIntervalDefault;
+    flyingBoostInterval = flyingBoostIntervalDefault;
+    shieldBoostInterval = shieldBoostIntervalDefault;
+    fireBoostInterval = fireBoostIntervalDefault;
+
     gamePaused = true;
     restartButton.style.display = 'none';
-    player = {
-        ...player,
-        x: 50 * scale,
-        y: canvas.height - 150 * scale,
-        color: 'red',
-        jumpPower: -15 * scale,
-        poweredUp: false,
-        flying: false
-    };
+    player = player_default;
+    player.dead = false;
 }
 
 function increaseDifficulty() {
@@ -661,11 +714,11 @@ function gameLoop() {
 
         detectCollision();
 
-        drawPlayer();
         drawObstacles();
         drawPowerUps();
-        drawBullets(); // рисуем снаряды
+        drawPlayer();
         drawShield();
+        drawBullets();
 
         updateScore();
         updateBoosts();
@@ -707,7 +760,6 @@ function handleInput() {
     if (player.flying) {
         player.hoverEndTime = Date.now();
         player.flying = false;
-        player.color = 'red';
     }
     if (player.grounded) {
         player.dy = player.jumpPower;
