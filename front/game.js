@@ -170,9 +170,9 @@ let powerUpSpeed = 4 * scale;
 let baseSpawnInterval = 3000;
 const minObstacleSpawnInterval = 1000;
 const spawnIntervalVariance = 1000;
-let powerUpInterval = Math.random() * (10000 - 5000) + 5000;
-let FlyingBoostInterval = Math.random() * (30000 - 5000) + 5000;
-let shieldBoostInterval = Math.random() * (30000 - 5000) + 5000;
+let powerUpInterval = Math.random() * 5000 + 5000;
+let FlyingBoostInterval = Math.random() * 25000 + 5000;
+let shieldBoostInterval = Math.random() * 50000 + 5000;
 const minObstacleDistance = player.width * 20;
 const minPowerUpDistance = player.width * 30;
 let lastSpawnTime = Date.now();
@@ -310,11 +310,20 @@ function spawnPowerUp(type) {
 }
 
 function drawObstacles() {
+    const timeElapsed = Date.now(); // Текущее время
     obstacles.forEach(obstacle => {
+        // Амплитуда и частота колебаний для препятствий
+        const amplitude = 2 * scale;
+        const frequency = 0.01;
+
+        // Рассчитываем вертикальный сдвиг для левитации
+        const verticalOffset = amplitude * Math.sin(frequency * timeElapsed);
+
         const imageToDraw = obstacle.hitState === 'hit' && obstacle.hitImage ? obstacle.hitImage : obstacle.image;
-        ctx.drawImage(imageToDraw, obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+        ctx.drawImage(imageToDraw, obstacle.x, obstacle.y + verticalOffset, obstacle.width, obstacle.height);
     });
 }
+
 
 function drawPowerUps() {
     powerUps.forEach(powerUp => {
