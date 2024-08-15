@@ -1,5 +1,4 @@
 const playerImage = new Image();
-const obstacleImage = new Image();
 const playerImageJump = new Image();
 const playerImageFly = new Image();
 
@@ -57,12 +56,32 @@ const obstacleImages = [
     obstacleImage1, obstacleImage2, obstacleImage3, obstacleImage4
 ];
 
-const loadAllImages = () => {
-    const imagePromises = Object.entries(imageSources).map(([key, src]) => {
-        return loadImage(src).then(img => ({key, img}));
+let loadedImages = {};
+
+loadAllImages().then(images => {
+    images.forEach(({ key, img }) => {
+        loadedImages[key] = img;
     });
-    return Promise.all(imagePromises);
-};
+
+    // Обновите ссылки на изображения, чтобы использовать загруженные изображения
+    playerImage.src = loadedImages.player.src;
+    playerImageJump.src = loadedImages.playerJump.src;
+    playerImageFly.src = loadedImages.playerFly.src;
+    playerImageRun1.src = loadedImages.playerRun1.src;
+    playerImageRun2.src = loadedImages.playerRun2.src;
+    playerImageRun3.src = loadedImages.playerRun3.src;
+    playerImageRun4.src = loadedImages.playerRun4.src;
+    jumpBoostImage.src = loadedImages.jumpBoost.src;
+    flyingBoostImage.src = loadedImages.flyingBoost.src;
+    obstacleImage1.src = loadedImages.obstacle1.src;
+    obstacleImage2.src = loadedImages.obstacle2.src;
+    obstacleImage3.src = loadedImages.obstacle3.src;
+    obstacleImage4.src = loadedImages.obstacle4.src;
+    obstacleImageHit1.src = loadedImages.obstacleHit1.src;
+
+}).catch(error => {
+    console.error('Error loading images:', error);
+});
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -83,6 +102,21 @@ const sounds = {
     boost: 'sounds/boost.mp3',
     flying: 'sounds/flying.mp3'
 };
+
+function loadImage(src) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Failed to load image at ${src}`));
+        img.src = src;
+    });
+}
+function loadAllImages() {
+    const imagePromises = Object.entries(imageSources).map(([key, src]) => {
+        return loadImage(src).then(img => ({ key, img }));
+    });
+    return Promise.all(imagePromises);
+}
 
 const loadSound = (src) => {
     return new Promise((resolve, reject) => {
@@ -174,7 +208,7 @@ function drawPlayer() {
     let imageToDraw;
 
     if (player.flying) {
-        imageToDraw = playerImageFly;
+        imageToDraw = loadedImages.playerFly;
     } else if (player.grounded) {
         if (Date.now() - lastAnimationFrameTime > animationInterval) {
             animationFrame = (animationFrame + 1) % 4;
@@ -183,20 +217,20 @@ function drawPlayer() {
 
         switch (animationFrame) {
             case 0:
-                imageToDraw = playerImageRun1;
+                imageToDraw = loadedImages.playerRun1;
                 break;
             case 1:
-                imageToDraw = playerImageRun2;
+                imageToDraw = loadedImages.playerRun2;
                 break;
             case 2:
-                imageToDraw = playerImageRun3;
+                imageToDraw = loadedImages.playerRun3;
                 break;
             case 3:
-                imageToDraw = playerImageRun4;
+                imageToDraw = loadedImages.playerRun4;
                 break;
         }
     } else {
-        imageToDraw = playerImageJump;
+        imageToDraw = loadedImages.playerJump;
     }
 
     ctx.drawImage(imageToDraw, player.x, player.y, player.width, player.height);
@@ -293,9 +327,9 @@ function drawPowerUps() {
         let imageToDraw;
 
         if (powerUp.type === 'jump_boost') {
-            imageToDraw = jumpBoostImage;
+            imageToDraw = loadedImages.jumpBoost;
         } else if (powerUp.type === 'Flying_boost') {
-            imageToDraw = flyingBoostImage;
+            imageToDraw = loadedImages.flyingBoost;
         }
 
         if (imageToDraw) {
@@ -398,7 +432,7 @@ function resetGame() {
 }
 
 function increaseDifficulty() {
-    gameSpeed += 0.001 * scale;
+    gameSpeed += 0.0007 * scale;
     baseSpawnInterval = Math.max(
         3000 - Math.floor(score * 10),
         minObstacleSpawnInterval
