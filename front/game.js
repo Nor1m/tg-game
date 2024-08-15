@@ -9,6 +9,7 @@ const playerImageRun4 = new Image();
 
 const jumpBoostImage = new Image();
 const flyingBoostImage = new Image();
+const shieldBoostImage = new Image();
 
 const obstacleImage1 = new Image();
 const obstacleImage2 = new Image();
@@ -26,31 +27,13 @@ const imageSources = {
     playerRun4: 'images/player-run-4.png',
     jumpBoost: 'images/jump-boost.png',
     flyingBoost: 'images/flying-boost.png',
+    shieldBoost: 'images/shield-boost.png',
     obstacle1: 'images/obstacle-1.png',
     obstacle2: 'images/obstacle-2.png',
     obstacle3: 'images/obstacle-3.png',
     obstacle4: 'images/obstacle-4.png',
     obstacleHit1: 'images/obstacle-hit-1.png',
 };
-
-jumpBoostImage.src = imageSources.jumpBoost;
-flyingBoostImage.src = imageSources.flyingBoost;
-
-playerImageFly.src = imageSources.playerFly;
-playerImageJump.src = imageSources.playerJump;
-playerImage.src = imageSources.player;
-
-playerImageRun1.src = imageSources.playerRun1;
-playerImageRun2.src = imageSources.playerRun2;
-playerImageRun3.src = imageSources.playerRun3;
-playerImageRun4.src = imageSources.playerRun4;
-
-obstacleImage1.src = imageSources.obstacle1;
-obstacleImage2.src = imageSources.obstacle2;
-obstacleImage3.src = imageSources.obstacle3;
-obstacleImage4.src = imageSources.obstacle4;
-
-obstacleImageHit1.src = imageSources.obstacleHit1;
 
 const obstacleImages = [
     obstacleImage1, obstacleImage2, obstacleImage3, obstacleImage4
@@ -73,6 +56,7 @@ loadAllImages().then(images => {
     playerImageRun4.src = loadedImages.playerRun4.src;
     jumpBoostImage.src = loadedImages.jumpBoost.src;
     flyingBoostImage.src = loadedImages.flyingBoost.src;
+    shieldBoostImage.src = imageSources.shieldBoost;
     obstacleImage1.src = loadedImages.obstacle1.src;
     obstacleImage2.src = loadedImages.obstacle2.src;
     obstacleImage3.src = loadedImages.obstacle3.src;
@@ -90,6 +74,7 @@ const startButton = document.getElementById('startButton');
 const scoreElement = document.getElementById('score');
 const jumpingBoostsElement = document.getElementById('jumping-boosts');
 const flyingBoostsElement = document.getElementById('flying-boosts');
+const shieldBoostsElement = document.getElementById('shield-boosts');
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
@@ -187,13 +172,16 @@ const minObstacleSpawnInterval = 1000;
 const spawnIntervalVariance = 1000;
 let powerUpInterval = Math.random() * (10000 - 5000) + 5000;
 let FlyingBoostInterval = Math.random() * (30000 - 5000) + 5000;
+let shieldBoostInterval = Math.random() * (30000 - 5000) + 5000;
 const minObstacleDistance = player.width * 20;
 const minPowerUpDistance = player.width * 30;
 let lastSpawnTime = Date.now();
 let lastPowerUpTime = Date.now();
 let lastFlyingBoostTime = Date.now();
+let lastShieldBoostTime  = Date.now();
 let score = 0;
 let gamePaused = true;
+let shieldBoostEndTime = 0;
 
 let animationFrame = 0;
 let animationInterval = 100; // Интервал переключения кадров (в миллисекундах)
@@ -292,8 +280,11 @@ function spawnPowerUp(type) {
         case 'jump_boost':
             powerUpY = groundLevel - player.height * 3 + (Math.random() * player.height - player.height / 2);
             break;
-        case 'Flying_boost':
+        case 'flying_boost':
             powerUpY = groundLevel - player.height * 5 + (Math.random() * player.height - player.height / 2);
+            break;
+        case 'shield_boost':
+            powerUpY = groundLevel - player.height * 4 + (Math.random() * player.height - player.height / 2);
             break;
     }
 
@@ -311,8 +302,10 @@ function spawnPowerUp(type) {
 
     if (type === 'jump_boost') {
         lastPowerUpTime = Date.now();
-    } else if (type === 'Flying_boost') {
+    } else if (type === 'flying_boost') {
         lastFlyingBoostTime = Date.now();
+    } else if (type === 'shield_boost') {
+        lastShieldBoostTime = Date.now();
     }
 }
 
@@ -329,8 +322,10 @@ function drawPowerUps() {
 
         if (powerUp.type === 'jump_boost') {
             imageToDraw = loadedImages.jumpBoost;
-        } else if (powerUp.type === 'Flying_boost') {
+        } else if (powerUp.type === 'flying_boost') {
             imageToDraw = loadedImages.flyingBoost;
+        } else if (powerUp.type === 'shield_boost') {
+            imageToDraw = loadedImages.shieldBoost;
         }
 
         if (imageToDraw) {
@@ -356,34 +351,43 @@ function updatePowerUps() {
 }
 
 function detectCollision() {
-    const collisionThreshold = 0.5; // Коэффициент, определяющий уровень соприкосновения
+    const collisionThreshold = 0.4; // Коэффициент, определяющий уровень соприкосновения
 
-    obstacles.some(obstacle => {
-        const horizontalOverlap = Math.max(0, Math.min(player.x + player.width, obstacle.x + obstacle.width) - Math.max(player.x, obstacle.x));
-        const verticalOverlap = Math.max(0, Math.min(player.y + player.height, obstacle.y + obstacle.height) - Math.max(player.y, obstacle.y));
+    // Проверяем, активен ли щит и что препятствия в его зоне
+    if (shieldBoostEndTime <= Date.now()) {
 
-        if (horizontalOverlap > 0 && verticalOverlap > 0) {
-            // Определяем процент перекрытия или используем другие критерии
-            const obstacleArea = obstacle.width * obstacle.height;
-            const overlapArea = horizontalOverlap * verticalOverlap;
-            const overlapPercentage = overlapArea / obstacleArea;
+        // Проверяем столкновение игрока с препятствиями
+        obstacles.some(obstacle => {
+            const horizontalOverlap = Math.max(0, Math.min(player.x + player.width, obstacle.x + obstacle.width) - Math.max(player.x, obstacle.x));
+            const verticalOverlap = Math.max(0, Math.min(player.y + player.height, obstacle.y + obstacle.height) - Math.max(player.y, obstacle.y));
 
-            if (overlapPercentage >= collisionThreshold) {
-                if (obstacle.hitState === 'normal') {
-                    obstacle.hitImage = obstacleImageHit1;
-                    obstacle.hitState = 'hit';
+            if (horizontalOverlap > 0 && verticalOverlap > 0) {
+                // Определяем процент перекрытия или используем другие критерии
+                const obstacleArea = obstacle.width * obstacle.height;
+                const overlapArea = horizontalOverlap * verticalOverlap;
+                const overlapPercentage = overlapArea / obstacleArea;
+
+                if (overlapPercentage >= collisionThreshold) {
+                    if (shieldBoostEndTime <= Date.now()) {
+                        // Если щит не активен
+                        if (obstacle.hitState === 'normal') {
+                            obstacle.hitImage = obstacleImageHit1;
+                            obstacle.hitState = 'hit';
+                        }
+                        playBoomSound();
+                        submitScore(score);
+                        gamePaused = true;
+                        restartButton.style.display = 'block';
+                        return true;
+                    }
                 }
-                playBoomSound();
-                submitScore(score);
-                gamePaused = true;
-                restartButton.style.display = 'block';
-                return true;
             }
-        }
-        return false;
-    });
+            return false;
+        });
 
+    }
 
+    // Проверка столкновений с бонусами
     powerUps.forEach((powerUp, index) => {
         const distX = player.x + player.width / 2 - powerUp.x;
         const distY = player.y + player.height / 2 - powerUp.y;
@@ -396,17 +400,51 @@ function detectCollision() {
                 player.color = 'purple';
                 player.jumpPower = -18 * scale;
                 player.powerUpEndTime = Math.max(player.powerUpEndTime, Date.now() + 10000);
-            } else if (powerUp.type === 'Flying_boost') {
+            } else if (powerUp.type === 'flying_boost') {
                 playBoostSound();
                 playFlyingSound();
                 player.flying = true;
                 player.color = 'orange';
                 player.hoverEndTime = Math.max(player.hoverEndTime, Date.now() + 5000);
                 flightBaseHeight = player.y;
+            } else if (powerUp.type === 'shield_boost') {
+                playBoostSound();
+                shieldBoostEndTime = Date.now() + 10000;
             }
             powerUps.splice(index, 1);
         }
     });
+}
+
+function drawShield() {
+    if (shieldBoostEndTime > Date.now()) {
+        // Определение центра и радиуса щита
+        const centerX = player.x + player.width / 2;
+        const centerY = player.y + player.height / 2;
+        const radius = player.width;
+
+        // Создание градиентного контура для щита
+        const gradient = ctx.createRadialGradient(centerX, centerY, radius * 0.1, centerX, centerY, radius);
+        gradient.addColorStop(0, 'rgba(0,255,234,0.05)'); // Центральный цвет щита
+        gradient.addColorStop(1, 'rgba(0,255,247,0.12)'); // Внешний цвет щита
+
+        // Рисование щита с градиентом
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.fillStyle = gradient;
+        ctx.fill();
+
+        // Добавление анимации переливания (заливаем градиентом)
+        const time = Date.now() * 0.005; // Уменьшаем скорость анимации
+        const offsetX = Math.sin(time) * 5;
+        const offsetY = Math.cos(time) * 5;
+
+        ctx.beginPath();
+        ctx.arc(centerX + offsetX, centerY + offsetY, radius, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(0,255,247,0.13)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
 }
 
 function resetGame() {
@@ -458,6 +496,16 @@ function updateBoosts() {
     } else {
         flyingBoostsElement.innerHTML = '';
     }
+
+    // Обновление информации о Shield Boost
+    if (shieldBoostEndTime > Date.now()) {
+        const shieldTimeLeft = Math.max(0, Math.floor((shieldBoostEndTime - Date.now()) / 1000));
+        // Обновляем элемент с информацией о Shield Boost
+        shieldBoostsElement.innerHTML = `Shield Boost: ${shieldTimeLeft}s<br>`;
+    } else {
+        // Если щит не активен, убираем информацию
+        shieldBoostsElement.innerHTML = '';
+    }
 }
 
 function gameLoop() {
@@ -472,6 +520,7 @@ function gameLoop() {
         drawPlayer();
         drawObstacles();
         drawPowerUps();
+        drawShield();
         updateScore();
         updateBoosts();
 
@@ -487,8 +536,13 @@ function gameLoop() {
         }
 
         if (Date.now() - lastFlyingBoostTime > FlyingBoostInterval) {
-            spawnPowerUp('Flying_boost');
+            spawnPowerUp('flying_boost');
             FlyingBoostInterval = Math.random() * (30000 - 5000) + 5000;
+        }
+
+        if (Date.now() - lastShieldBoostTime > shieldBoostInterval) {
+            spawnPowerUp('shield_boost');
+            shieldBoostInterval = Math.random() * (5000 - 5000) + 5000;
         }
 
         increaseDifficulty();
