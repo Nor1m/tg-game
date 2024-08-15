@@ -81,6 +81,9 @@ loadAllImages().then(images => {
     obstacleImage4.src = loadedImages.obstacle4.src;
     obstacleImageHit1.src = loadedImages.obstacleHit1.src;
 
+    startButton.style.display = 'block';
+    console.log('loaded');
+
 }).catch(error => {
     console.error('Error loading images:', error);
 });
@@ -197,7 +200,6 @@ const player_default = {
     gravity: 0.35 * scale,
     jumpPower: -15 * scale,
     grounded: false,
-    color: 'red',
     poweredUp: false,
     powerUpEndTime: 0,
     flying: false,
@@ -216,9 +218,9 @@ const minObstacleSpawnInterval = 1000;
 const spawnIntervalVariance = 1000;
 
 let powerUpInterval = Math.random() * 5000;
-let flyingBoostInterval = Math.random() * 5000;
-let shieldBoostInterval = Math.random() * 5000;
-let fireBoostInterval = Math.random() * 5000;
+let flyingBoostInterval = Math.random() * 30000;
+let shieldBoostInterval = Math.random() * 40000;
+let fireBoostInterval = Math.random() * 60000;
 
 const powerUpIntervalDefault = powerUpInterval;
 const flyingBoostIntervalDefault = flyingBoostInterval;
@@ -257,7 +259,6 @@ function drawPlayer() {
     if (player.dead) {
         imageToDraw = loadedImages.playerDead;
     } else if (fireBoostActive && Date.now() < fireBoostEndTime) {
-
         switch (animationFrame) {
             default:
             case 0:
@@ -271,7 +272,6 @@ function drawPlayer() {
     } else if (player.flying) {
         imageToDraw = loadedImages.playerFly;
     } else if (player.grounded) {
-
         switch (animationFrame) {
             default:
             case 0:
@@ -297,9 +297,10 @@ function drawPlayer() {
 function shootBullet() {
     if (fireBoostActive && Date.now() < fireBoostEndTime) {
         playFireSound();
+        let player_center = player.y + player.height / 2;
         bullets.push({
             x: player.x + player.width,
-            y: player.y + player.height / 2 - 22.5,
+            y: player_center - (player_center / 43.3),
             width: 20 * scale,
             height: 10 * scale,
             speed: 4 * scale, // Скорость пули
@@ -585,7 +586,7 @@ function detectCollision() {
 
 function activateFireBoost() {
     fireBoostActive = true;
-    fireBoostEndTime = Date.now() + 50000; // Активируем бонус на 5 секунд
+    fireBoostEndTime = Date.now() + 5000; // Активируем бонус на 5 секунд
 
     fireInterval = setInterval(() => {
         if (Date.now() < fireBoostEndTime) {
