@@ -176,6 +176,12 @@ function playFlyingSound() {
     }
 }
 
+function pauseFlyingSound() {
+    if (loadedSounds.flying) {
+        loadedSounds.flying.pause();
+    }
+}
+
 function playFireSound() {
     if (loadedSounds.fire) {
         loadedSounds.fire.play();
@@ -186,9 +192,7 @@ function pauseSounds() {
     if (loadedSounds.fire) {
         loadedSounds.fire.pause();
     }
-    if (loadedSounds.flying) {
-        loadedSounds.flying.pause();
-    }
+    pauseFlyingSound();
 }
 
 const player_default = {
@@ -296,22 +300,22 @@ function drawPlayer() {
 
 function shootBullet() {
     if (fireBoostActive && Date.now() < fireBoostEndTime) {
-        playFireSound();
         let player_center = player.y + player.height / 2;
         bullets.push({
             x: player.x + player.width,
             y: player_center - (player_center / 43.3),
             width: 20 * scale,
             height: 10 * scale,
-            speed: 4 * scale, // Скорость пули
-            distanceTraveled: 0, // Отслеживание пройденного расстояния
-            maxDistance: canvas.width / 1.5
+            speed: 7 * scale,
+            distanceTraveled: 0,
+            maxDistance: canvas.width / 1.8
         });
     }
 }
 
 function drawBullets() {
     bullets.forEach(bullet => {
+        playFireSound();
         ctx.drawImage(fireBulletImage, bullet.x, bullet.y, bullet.width, bullet.height);
     });
 }
@@ -328,22 +332,18 @@ function updateBullets() {
                 bullet.y < obstacle.y + obstacle.height &&
                 bullet.y + bullet.height > obstacle.y) {
 
-                // Меняем изображение на поврежденное
                 obstacle.image = obstacleImageHit1;
 
                 playBoomSound();
 
-                // Удаляем пулю
                 bullets.splice(bullets.indexOf(bullet), 1);
 
-                // Удаляем препятствие через полсекунды
                 setTimeout(() => {
                     obstacles.splice(index, 1);
                 }, 100);
             }
         });
 
-        // Удаляем пулю, если она пролетела половину экрана
         if (bullet.distanceTraveled > bullet.maxDistance) {
             bullets.splice(bullets.indexOf(bullet), 1);
         }
@@ -502,6 +502,8 @@ function onFail() {
     playBoomSound();
     submitScore(score);
     restartButton.style.display = 'block';
+    player.powerUpEndTime = 0;
+    player.hoverEndTime = 0;
 }
 
 function detectCollision() {
@@ -586,7 +588,7 @@ function detectCollision() {
 
 function activateFireBoost() {
     fireBoostActive = true;
-    fireBoostEndTime = Date.now() + 5000; // Активируем бонус на 5 секунд
+    fireBoostEndTime = Date.now() + 7000; // Активируем бонус на 5 секунд
 
     fireInterval = setInterval(() => {
         if (Date.now() < fireBoostEndTime) {
@@ -595,7 +597,7 @@ function activateFireBoost() {
             clearInterval(fireInterval); // Останавливаем стрельбу, когда время действия бонуса истекло
             fireBoostActive = false;
         }
-    }, 400); // интервал стрельбы - 1000 мс
+    }, 200); // интервал стрельбы
 }
 
 function drawShield() {
@@ -675,28 +677,28 @@ function updateScore() {
 
 function updateBoosts() {
     if (player.poweredUp) {
-        const jumpTimeLeft = Math.max(0, Math.floor((player.powerUpEndTime - Date.now()) / 1000));
+        const jumpTimeLeft = Math.max(1, Math.ceil((player.powerUpEndTime - Date.now()) / 1000));
         jumpingBoostsElement.innerHTML = `Jumping Boost: ${jumpTimeLeft}s<br>`;
     } else {
         jumpingBoostsElement.innerHTML = '';
     }
 
     if (player.flying) {
-        const hoverTimeLeft = Math.max(0, Math.floor((player.hoverEndTime - Date.now()) / 1000));
+        const hoverTimeLeft = Math.max(1, Math.ceil((player.hoverEndTime - Date.now()) / 1000));
         flyingBoostsElement.innerHTML = `Flying Boost: ${hoverTimeLeft}s<br>`;
     } else {
         flyingBoostsElement.innerHTML = '';
     }
 
     if (shieldBoostEndTime > Date.now()) {
-        const shieldTimeLeft = Math.max(0, Math.floor((shieldBoostEndTime - Date.now()) / 1000));
+        const shieldTimeLeft = Math.max(1, Math.ceil((shieldBoostEndTime - Date.now()) / 1000));
         shieldBoostsElement.innerHTML = `Shield Boost: ${shieldTimeLeft}s<br>`;
     } else {
         shieldBoostsElement.innerHTML = '';
     }
 
     if (fireBoostActive && fireBoostEndTime > Date.now()) {
-        const fireTimeLeft = Math.max(0, Math.floor((fireBoostEndTime - Date.now()) / 1000));
+        const fireTimeLeft = Math.max(1, Math.ceil((fireBoostEndTime - Date.now()) / 1000));
         fireBoostsElement.innerHTML = `Fire Boost: ${fireTimeLeft}s<br>`;
     } else {
         fireBoostsElement.innerHTML = '';
@@ -761,6 +763,7 @@ function handleInput() {
     if (player.flying) {
         player.hoverEndTime = Date.now();
         player.flying = false;
+        pauseFlyingSound();
     }
     if (player.grounded) {
         player.dy = player.jumpPower;
