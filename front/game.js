@@ -179,6 +179,7 @@ function playFlyingSound() {
 function pauseFlyingSound() {
     if (loadedSounds.flying) {
         loadedSounds.flying.pause();
+        loadedSounds.flying.currentTime = 0;
     }
 }
 
@@ -191,6 +192,7 @@ function playFireSound() {
 function pauseSounds() {
     if (loadedSounds.fire) {
         loadedSounds.fire.pause();
+        loadedSounds.fire.currentTime = 0;
     }
     pauseFlyingSound();
 }
@@ -221,10 +223,10 @@ let baseSpawnInterval = 3000;
 const minObstacleSpawnInterval = 1000;
 const spawnIntervalVariance = 1000;
 
-let powerUpInterval = Math.random() * 5000;
+let powerUpInterval = Math.random() * 30000;
 let flyingBoostInterval = Math.random() * 30000;
-let shieldBoostInterval = Math.random() * 40000;
-let fireBoostInterval = Math.random() * 60000;
+let shieldBoostInterval = Math.random() * 30000;
+let fireBoostInterval = Math.random() * 50000;
 
 const powerUpIntervalDefault = powerUpInterval;
 const flyingBoostIntervalDefault = flyingBoostInterval;
@@ -308,7 +310,7 @@ function shootBullet() {
             height: 10 * scale,
             speed: 7 * scale,
             distanceTraveled: 0,
-            maxDistance: canvas.width / 1.8
+            maxDistance: canvas.width / 1.6
         });
     }
 }
