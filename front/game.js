@@ -111,6 +111,7 @@ const scale = Math.min(canvas.width / 800, canvas.height / 600);
 const groundLevel = canvas.height - 20 * scale;
 
 const sounds = {
+    background: 'sounds/background.ogg',
     boom: 'sounds/boom.mp3',
     boost: 'sounds/boost.mp3',
     flying: 'sounds/flying.mp3',
@@ -158,6 +159,21 @@ loadAllSounds().then(soundList => {
     console.error('Error loading sounds:', error);
 });
 
+function playBackgroundSound() {
+    if (loadedSounds.background) {
+        loadedSounds.background.volume = 0.3;
+        loadedSounds.background.loop = true;
+        loadedSounds.background.play();
+    }
+}
+
+function stopBackgroundSound() {
+    if (loadedSounds.background) {
+        loadedSounds.background.pause();
+        loadedSounds.background.currentTime = 0;
+    }
+}
+
 function playBoomSound() {
     if (loadedSounds.boom) {
         loadedSounds.boom.play();
@@ -176,10 +192,17 @@ function playFlyingSound() {
     }
 }
 
-function pauseFlyingSound() {
+function stopFlyingSound() {
     if (loadedSounds.flying) {
         loadedSounds.flying.pause();
         loadedSounds.flying.currentTime = 0;
+    }
+}
+
+function stopFireSound() {
+    if (loadedSounds.fire) {
+        loadedSounds.fire.pause();
+        loadedSounds.fire.currentTime = 0;
     }
 }
 
@@ -187,14 +210,6 @@ function playFireSound() {
     if (loadedSounds.fire) {
         loadedSounds.fire.play();
     }
-}
-
-function pauseSounds() {
-    if (loadedSounds.fire) {
-        loadedSounds.fire.pause();
-        loadedSounds.fire.currentTime = 0;
-    }
-    pauseFlyingSound();
 }
 
 const player_default = {
@@ -500,7 +515,9 @@ function onFail() {
     player.dead = true;
     gamePaused = true;
     fireBoostActive = false;
-    pauseSounds();
+    stopBackgroundSound();
+    stopFireSound();
+    stopFlyingSound();
     playBoomSound();
     submitScore(score);
     restartButton.style.display = 'block';
@@ -765,7 +782,7 @@ function handleInput() {
     if (player.flying) {
         player.hoverEndTime = Date.now();
         player.flying = false;
-        pauseFlyingSound();
+        stopFlyingSound();
     }
     if (player.grounded) {
         player.dy = player.jumpPower;
@@ -786,14 +803,24 @@ document.addEventListener('keydown', (event) => {
 });
 
 restartButton.addEventListener('click', () => {
-    resetGame();
-    setSettingsForPlaying();
+    restartGame();
 });
 
 startButton.addEventListener('click', () => {
+    startGame();
+});
+
+function restartGame() {
+    playBackgroundSound();
+    resetGame();
+    setSettingsForPlaying();
+}
+
+function startGame() {
+    playBackgroundSound();
     setSettingsForPlaying();
     gameLoop();
-});
+}
 
 function submitScore(score) {
     const urlParams = new URLSearchParams(window.location.search);
