@@ -10,7 +10,7 @@ const port = process.env.PORT || 5000;
 const gameName = "jump";
 const queries = {};
 
-server.use(express.static(path.join(__dirname, 'front')));
+server.use(express.static(path.join(__dirname, 'front/dist')));
 server.use(bodyParser.json());
 
 //let messageId;
