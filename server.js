@@ -15,7 +15,7 @@ const host = process.env.HOST;
 const gameName = "jump";
 const serverHost = host + ':' + port;
 
-server.use(express.static(path.join(__dirname, 'front/dist')));
+server.use(express.static(path.join(__dirname, 'front')));
 server.use(bodyParser.json());
 
 server.use((req, res, next) => {
@@ -74,14 +74,15 @@ bot.onText(/help/, (msg) => {
 // Обработка callback_query
 bot.on("callback_query", function (query) {
     if (query.game_short_name !== gameName) {
-        bot.answerCallbackQuery(query.id, `Sorry, '${query.game_short_name}' is not available.`).then(r => {});
+        bot.answerCallbackQuery(query.id, {
+            text: `Sorry, '${query.game_short_name}' is not available.`
+        }).then(r => {});
     } else {
         const gameUrl = serverHost + `/?userId=${query.from.id}&messageId=${query.message?.message_id}&inlineMessageId=${query.inline_message_id}`;
 
-        console.error('gameUrl', gameUrl);
+        console.log('gameUrl', gameUrl);
 
-        bot.answerCallbackQuery({
-            callback_query_id: query.id,
+        bot.answerCallbackQuery(query.id, {
             url: gameUrl
         }).catch(err => {
             console.error('Failed to answer callback query:', err);
