@@ -71,7 +71,7 @@ canvas {
 }
 
 body {
-    background-image: url(images/wallpaper.png);
+    background-image: url(../../images/wallpaper.png);
     background-size: auto;
     background-repeat: no-repeat;
     background-position: bottom;

@@ -6,11 +6,11 @@ const cleanCSS = require('gulp-clean-css');
 const paths = {
     scripts: {
         src: 'front/src/js/**/*.js',
-        dest: 'dist/js/'
+        dest: 'front/dist/js/'
     },
     styles: {
         src: 'front/src/css/**/*.css',
-        dest: 'dist/css/'
+        dest: 'front/dist/css/'
     }
 };
 
