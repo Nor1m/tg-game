@@ -2,28 +2,39 @@ const express = require("express");
 const path = require("path");
 const bodyParser = require("body-parser");
 const TelegramBot = require("node-telegram-bot-api");
+const cors = require('cors');
+//const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
-const TOKEN = "7376973021:AAHGa1WlqbsR-rT16NXOuJ53XA9xZoNBD_s";
-const bot = new TelegramBot(TOKEN, {polling: true});
+//const jwtSecret = process.env.JWT_SECRET;
+const TgToken = process.env.TG_TOKEN;
+const bot = new TelegramBot(TgToken, {polling: true});
 const server = express();
-const port = process.env.PORT || 5000;
+const port = process.env.PORT;
+const host = process.env.HOST;
 const gameName = "jump";
-const queries = {};
+const serverHost = host + ':' + port;
 
 server.use(express.static(path.join(__dirname, 'front/dist')));
 server.use(bodyParser.json());
 
-//let messageId;
+server.use((req, res, next) => {
+    console.log(`${req.method} ${req.url}`);
+    next();
+});
+
+server.use(cors({
+    origin: serverHost,
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 bot.onText(/start|game/, (msg) => {
     bot.sendGame(msg.chat.id, gameName)
-        .then((sentMessage) => {
-            //messageId = sentMessage.message_id;
-            //console.error('messageId', messageId);
-        })
+        .then((sentMessage) => {})
         .catch(err => {
             console.error('Failed to send game:', err);
-            bot.sendMessage(msg.chat.id, "Sorry, the game could not be started.");
+            bot.sendMessage(msg.chat.id, "Sorry, the game could not be started.").then(r => {});
         });
 });
 
@@ -57,17 +68,15 @@ server.get("/submit-score", (req, res) => {
 
 // Команда /help
 bot.onText(/help/, (msg) => {
-    bot.sendMessage(msg.from.id, "This is the Jumping game. Write /game to start playing.");
+    bot.sendMessage(msg.from.id, "This is the Jumping game. Write /game to start playing.").then(r => {});
 });
 
 // Обработка callback_query
 bot.on("callback_query", function (query) {
     if (query.game_short_name !== gameName) {
-        bot.answerCallbackQuery(query.id, `Sorry, '${query.game_short_name}' is not available.`);
+        bot.answerCallbackQuery(query.id, `Sorry, '${query.game_short_name}' is not available.`).then(r => {});
     } else {
-        queries[query.id] = query;
-
-        const gameUrl = `http://31.129.108.97:5000/?userId=${query.from.id}&messageId=${query.message?.message_id}&inlineMessageId=${query.inline_message_id}`;
+        const gameUrl = serverHost + `/?userId=${query.from.id}&messageId=${query.message?.message_id}&inlineMessageId=${query.inline_message_id}`;
 
         console.error('gameUrl', gameUrl);
 
@@ -88,11 +97,11 @@ bot.onText(/leaderboard/, (msg) => {
             scores.forEach((score, index) => {
                 leaderboard += `${index + 1}. ${score.user.first_name}: ${score.score}\n`;
             });
-            bot.sendMessage(chatId, leaderboard);
+            bot.sendMessage(chatId, leaderboard).then(r => {});
         })
         .catch(err => {
             console.error('Failed to get leaderboard:', err);
-            bot.sendMessage(chatId, "Sorry, could not retrieve the leaderboard.");
+            bot.sendMessage(chatId, "Sorry, could not retrieve the leaderboard.").then(r => {});
         });
 });
 
