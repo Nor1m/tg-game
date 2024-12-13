@@ -59,7 +59,6 @@
             loadedImages[key] = img;
         });
 
-        // Обновите ссылки на изображения, чтобы использовать загруженные изображения
         playerImage.src = loadedImages.player.src;
         playerImageJump.src = loadedImages.playerJump.src;
         playerImageDead.src = loadedImages.playerDead.src;
