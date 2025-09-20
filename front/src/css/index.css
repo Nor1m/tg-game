@@ -69,12 +69,12 @@ canvas {
 
 #fps {
     position: absolute;
-    top: 49px;
+    top: 60px;
     right: 20px;
-    font-size: 14px;
+    font-size: 13px;
     z-index: 10;
     color: #fff;
-    opacity: .2;
+    opacity: .15;
 }
 
 .boosts_block {
@@ -85,8 +85,9 @@ canvas {
 }
 
 .boosts {
-    font-size: 17px;
-    font-family: Arial, sans-serif;
+    display: inline-block;
+    margin-bottom: 2px;
+    font-size: 16px;
 }
 
 #flying-boosts {
