@@ -91,7 +91,7 @@ canvas {
 #lives {
     display: none;
     position: absolute;
-    top: 15px;
+    top: 10px;
     right: 20px;
     font-size: 28px;
     font-family: Arial, sans-serif;
@@ -101,7 +101,6 @@ canvas {
 
 .heart {
     transition: all 0.3s ease;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
     font-size: 1.1em;
 }
 
