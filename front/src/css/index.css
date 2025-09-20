@@ -89,13 +89,13 @@ canvas {
 }
 
 #lives {
+    display: none;
     position: absolute;
     top: 20px;
     right: 20px;
     font-size: 28px;
     font-family: Arial, sans-serif;
     z-index: 10;
-    display: flex;
     gap: 8px;
 }
 
