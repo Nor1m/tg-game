@@ -584,7 +584,7 @@
         for (let i = 0; i < maxLives; i++) {
             const heart = document.createElement('div');
             heart.className = 'heart';
-            heart.innerHTML = '♥';
+            heart.innerHTML = '❤️';
 
             if (i < lives) {
                 heart.classList.add('active');

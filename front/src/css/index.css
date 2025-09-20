@@ -46,20 +46,22 @@ canvas {
     position: absolute;
     top: 20px;
     left: 20px;
-    font-size: 20px;
     color: #e8e0ff;
     font-family: Arial, sans-serif;
     z-index: 10;
+    align-items: center;
 }
 
 #score {
     display: none;
+    font-size: 20px;
 }
 
 #score_bonus {
     display: none;
-    padding-left: 15px;
+    padding-left: 10px;
     color: #ffca00;
+    text-shadow: 0 0 17px #ffca00;
     animation: heartbeat 0.8s cubic-bezier(0.4, 0, 1, 1) infinite;
 }
 
