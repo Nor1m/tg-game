@@ -69,7 +69,7 @@ canvas {
 
 #fps {
     position: absolute;
-    top: 60px;
+    top: 55px;
     right: 20px;
     font-size: 13px;
     z-index: 10;
@@ -79,14 +79,13 @@ canvas {
 
 .boosts_block {
     position: absolute;
-    top: 60px;
+    top: 50px;
     left: 20px;
     z-index: 10;
 }
 
 .boosts {
-    display: inline-block;
-    margin-bottom: 2px;
+    line-height: 20px;
     font-size: 16px;
 }
 
