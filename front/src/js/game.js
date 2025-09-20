@@ -433,6 +433,7 @@
         const lastPowerUp = powerUps[powerUps.length - 1];
         let powerUpX = canvas.width + Math.random() * canvas.width;
         let powerUpY;
+        let radius = 15 * scale;
 
         switch (type) {
             case 'jump_boost':
@@ -449,6 +450,7 @@
                 break;
             case 'coin_boost':
                 powerUpY = groundLevel - player.height * 4.5 + (Math.random() * player.height - player.height / 2);
+                radius = 20 * scale;
                 break;
         }
 
@@ -459,7 +461,7 @@
         powerUps.push({
             x: powerUpX,
             y: powerUpY,
-            radius: 15 * scale,
+            radius: radius,
             speed: powerUpSpeed,
             type: type
         });
