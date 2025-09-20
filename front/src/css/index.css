@@ -67,6 +67,16 @@ canvas {
     content: '+';
 }
 
+#fps {
+    position: absolute;
+    top: 49px;
+    right: 20px;
+    font-size: 18px;
+    z-index: 10;
+    color: #fff;
+    opacity: .2;
+}
+
 .boosts_block {
     position: absolute;
     top: 60px;

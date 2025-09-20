@@ -1,4 +1,8 @@
 (() => {
+    let fps = 0;
+    let frameCount = 0;
+    let lastFpsTime = Date.now();
+
     const playerImage = new Image();
     const playerImageDead = new Image();
     const playerImageJump = new Image();
@@ -111,6 +115,7 @@
     const fireBoostsElement = document.getElementById('fire-boosts');
     const boostsElements = document.getElementsByClassName('boosts');
     const livesElement = document.getElementById('lives');
+    const fpsElement = document.getElementById('fps');
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -875,6 +880,24 @@
         }
 
         requestAnimationFrame(gameLoop);
+
+        updateFPS();
+        drawFPS();
+    }
+
+    function updateFPS() {
+        frameCount++;
+        const currentTime = Date.now();
+
+        if (currentTime - lastFpsTime >= 1000) {
+            fps = frameCount;
+            frameCount = 0;
+            lastFpsTime = currentTime;
+        }
+    }
+
+    function drawFPS() {
+        fpsElement.innerHTML = `FPS: ${fps}`;
     }
 
     function handleInput() {
