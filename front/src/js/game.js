@@ -89,6 +89,8 @@
         console.error('Error loading images:', error);
     });
 
+    let lives = 3;
+    const maxLives = 3;
     let fireBoostActive = false;
     let fireBoostEndTime = 0;
     let fireInterval;
@@ -104,6 +106,7 @@
     const shieldBoostsElement = document.getElementById('shield-boosts');
     const fireBoostsElement = document.getElementById('fire-boosts');
     const boostsElements = document.getElementsByClassName('boosts');
+    const livesElement = document.getElementById('lives');
 
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
@@ -510,20 +513,71 @@
     }
 
     function onFail() {
-        Array.from(boostsElements).forEach(element => {
-            element.innerHTML = '';
-        });
-        player.dead = true;
-        gamePaused = true;
-        fireBoostActive = false;
-        stopBackgroundSound();
-        stopFireSound();
-        stopFlyingSound();
-        playBoomSound();
-        submitScore(score);
-        restartButton.style.display = 'block';
-        player.powerUpEndTime = 0;
-        player.hoverEndTime = 0;
+        lives--;
+        updateLives();
+
+        if (lives <= 0) {
+            // Полная остановка игры
+            Array.from(boostsElements).forEach(element => {
+                element.innerHTML = '';
+            });
+            player.dead = true;
+            gamePaused = true;
+            fireBoostActive = false;
+            stopBackgroundSound();
+            stopFireSound();
+            stopFlyingSound();
+            playBoomSound();
+            submitScore(score);
+            restartButton.style.display = 'block';
+            player.powerUpEndTime = 0;
+            player.hoverEndTime = 0;
+        } else {
+            // Возрождение игрока с небольшой неуязвимостью
+            respawnPlayer();
+        }
+    }
+
+    function respawnPlayer() {
+        // Временная неуязвимость после возрождения (2 секунды)
+        const invulnerabilityTime = 2000;
+        shieldBoostEndTime = Math.max(shieldBoostEndTime, Date.now() + invulnerabilityTime);
+
+        // Сброс позиции игрока
+        player.y = groundLevel - player.height;
+        player.dy = 0;
+        player.grounded = true;
+        player.dead = false;
+
+        // Очистка препятствий рядом с игроком для безопасного возрождения
+        obstacles = obstacles.filter(obstacle =>
+            obstacle.x > player.x + player.width + 200 * scale ||
+            obstacle.x + obstacle.width < player.x - 200 * scale
+        );
+
+        // Визуальная индикация возрождения (можно добавить звук возрождения)
+        playBoostSound();
+    }
+
+    function updateLives() {
+        // Очистка контейнера жизней
+        livesElement.innerHTML = '';
+
+        // Создание сердечек для каждой жизни
+        for (let i = 0; i < maxLives; i++) {
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+
+            if (i < lives) {
+                heart.classList.add('active');
+                heart.innerHTML = '♥'; // Полное сердце
+            } else {
+                heart.classList.add('inactive');
+                heart.innerHTML = '♡'; // Пустое сердце
+            }
+
+            livesElement.appendChild(heart);
+        }
     }
 
     function detectCollision() {
@@ -656,6 +710,7 @@
         powerUps = [];
         gameSpeed = 5 * scale;
         score = 0;
+        lives = maxLives; // Сброс жизней
 
         Array.from(boostsElements).forEach(element => {
             element.innerHTML = '';
@@ -679,8 +734,10 @@
 
         gamePaused = true;
         restartButton.style.display = 'none';
-        player = player_default;
+        player = {...player_default}; // Создание копии объекта
         player.dead = false;
+
+        updateLives(); // Обновление отображения жизней
     }
 
     function increaseDifficulty() {
@@ -820,6 +877,7 @@
     function startGame() {
         playBackgroundSound();
         setSettingsForPlaying();
+        updateLives(); // Инициализация отображения жизней
         gameLoop();
     }
 
