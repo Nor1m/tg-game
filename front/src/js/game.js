@@ -246,11 +246,11 @@
     const minObstacleSpawnInterval = 1000;
     const spawnIntervalVariance = 1000;
 
-    let powerUpInterval = Math.random() * 100;
-    let flyingBoostInterval = Math.random() * 100;
-    let shieldBoostInterval = Math.random() * 100;
-    let fireBoostInterval = Math.random() * 100;
-    let coinBoostInterval = Math.random() * 100;
+    let powerUpInterval = Math.random() * 1000;
+    let flyingBoostInterval = Math.random() * 4000;
+    let shieldBoostInterval = Math.random() * 5000;
+    let fireBoostInterval = Math.random() * 2000;
+    let coinBoostInterval = Math.random() * 3000;
 
     const powerUpIntervalDefault = powerUpInterval;
     const flyingBoostIntervalDefault = flyingBoostInterval;
@@ -847,12 +847,12 @@
 
             if (Date.now() - lastFireBoostTime > fireBoostInterval) {
                 spawnPowerUp('fire_boost');
-                fireBoostInterval = Math.random() * 80000;
+                fireBoostInterval = Math.random() * 70000;
             }
 
             if (Date.now() - lastPowerUpTime > powerUpInterval) {
                 spawnPowerUp('jump_boost');
-                powerUpInterval = Math.random() * 10000;
+                powerUpInterval = Math.random() * 15000;
             }
 
             if (Date.now() - lastFlyingBoostTime > flyingBoostInterval) {
@@ -862,12 +862,12 @@
 
             if (Date.now() - lastShieldBoostTime > shieldBoostInterval) {
                 spawnPowerUp('shield_boost');
-                shieldBoostInterval = Math.random() * 55000;
+                shieldBoostInterval = Math.random() * 50000;
             }
 
             if (Date.now() - lastCoinBoostTime > coinBoostInterval) {
                 spawnPowerUp('coin_boost');
-                coinBoostInterval = Math.random() * 55000;
+                coinBoostInterval = Math.random() * 45000;
             }
 
             increaseDifficulty();
