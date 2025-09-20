@@ -13,6 +13,7 @@
     const flyingBoostImage = new Image();
     const shieldBoostImage = new Image();
     const fireBoostImage = new Image();
+    const coinBoostImage = new Image();
 
     const obstacleImage1 = new Image();
     const obstacleImage2 = new Image();
@@ -41,6 +42,7 @@
         flyingBoost: 'images/flying-boost.png',
         shieldBoost: 'images/shield-boost.png',
         fireBoost: 'images/fire-boost.png',
+        coinBoost: 'images/coin-boost.png',
         obstacle1: 'images/obstacle-1.png',
         obstacle2: 'images/obstacle-2.png',
         obstacle3: 'images/obstacle-3.png',
@@ -75,6 +77,7 @@
         flyingBoostImage.src = loadedImages.flyingBoost.src;
         shieldBoostImage.src = imageSources.shieldBoost;
         fireBoostImage.src = imageSources.fireBoost;
+        coinBoostImage.src = imageSources.coinBoost;
         obstacleImage1.src = loadedImages.obstacle1.src;
         obstacleImage2.src = loadedImages.obstacle2.src;
         obstacleImage3.src = loadedImages.obstacle3.src;
@@ -88,6 +91,7 @@
         console.error('Error loading images:', error);
     });
 
+    const coinScoreBoost = 50;
     let lives = 3;
     const maxLives = 3;
     let fireBoostActive = false;
@@ -100,6 +104,7 @@
     const restartButton = document.getElementById('restartButton');
     const startButton = document.getElementById('startButton');
     const scoreElement = document.getElementById('score');
+    const scoreBonusElement = document.getElementById('score_bonus');
     const jumpingBoostsElement = document.getElementById('jumping-boosts');
     const flyingBoostsElement = document.getElementById('flying-boosts');
     const shieldBoostsElement = document.getElementById('shield-boosts');
@@ -241,15 +246,17 @@
     const minObstacleSpawnInterval = 1000;
     const spawnIntervalVariance = 1000;
 
-    let powerUpInterval = Math.random() * 30000;
-    let flyingBoostInterval = Math.random() * 30000;
-    let shieldBoostInterval = Math.random() * 30000;
-    let fireBoostInterval = Math.random() * 50000;
+    let powerUpInterval = Math.random() * 100;
+    let flyingBoostInterval = Math.random() * 100;
+    let shieldBoostInterval = Math.random() * 100;
+    let fireBoostInterval = Math.random() * 100;
+    let coinBoostInterval = Math.random() * 100;
 
     const powerUpIntervalDefault = powerUpInterval;
     const flyingBoostIntervalDefault = flyingBoostInterval;
     const shieldBoostIntervalDefault = shieldBoostInterval;
     const fireBoostIntervalDefault = fireBoostInterval;
+    const coinBoostIntervalDefault = coinBoostInterval;
 
     const minObstacleDistance = player.width * 20;
     const minPowerUpDistance = player.width * 30;
@@ -258,6 +265,7 @@
     let lastFlyingBoostTime = Date.now();
     let lastShieldBoostTime = Date.now();
     let lastFireBoostTime = Date.now();
+    let lastCoinBoostTime = Date.now();
     let score = 0;
     let gamePaused = true;
     let shieldBoostEndTime = 0;
@@ -434,6 +442,9 @@
             case 'fire_boost':
                 powerUpY = groundLevel - player.height * 2 + (Math.random() * player.height - player.height / 2);
                 break;
+            case 'coin_boost':
+                powerUpY = groundLevel - player.height * 4.5 + (Math.random() * player.height - player.height / 2);
+                break;
         }
 
         if (lastPowerUp && Math.abs(powerUpX - lastPowerUp.x) < minPowerUpDistance) {
@@ -456,6 +467,8 @@
             lastShieldBoostTime = Date.now();
         } else if (type === 'fire_boost') {
             lastFireBoostTime = Date.now();
+        } else if (type === 'coin_boost') {
+            lastCoinBoostTime = Date.now();
         }
     }
 
@@ -487,6 +500,8 @@
                 imageToDraw = loadedImages.shieldBoost;
             } else if (powerUp.type === 'fire_boost') {
                 imageToDraw = loadedImages.fireBoost;
+            } else if (powerUp.type === 'coin_boost') {
+                imageToDraw = loadedImages.coinBoost;
             }
 
             if (imageToDraw) {
@@ -654,10 +669,29 @@
                     doVibrate([100, 50, 100]);
                     playBoostSound();
                     activateFireBoost();
+                } else if (powerUp.type === 'coin_boost') {
+                    doVibrate([100, 50, 100]);
+                    playBoostSound();
+                    activateCoinBoost();
                 }
                 powerUps.splice(index, 1);
             }
         });
+    }
+
+    function activateCoinBoost() {
+        const currentScoreBonus = parseInt(scoreBonusElement.textContent, 10) || 0;
+        const coinsBonus = currentScoreBonus + coinScoreBoost;
+        scoreBonusElement.textContent = coinsBonus.toString();
+        scoreBonusElement.textContent = `${coinsBonus}`;
+        scoreBonusElement.style.display = 'block';
+
+        setTimeout(() => {
+            scoreBonusElement.textContent = '';
+            scoreBonusElement.style.display = 'none';
+        }, 2000);
+
+        score += coinScoreBoost;
     }
 
     function activateFireBoost() {
@@ -726,11 +760,13 @@
         lastFlyingBoostTime = Date.now();
         lastShieldBoostTime = Date.now();
         lastFireBoostTime = Date.now();
+        lastCoinBoostTime = Date.now();
 
         powerUpInterval = powerUpIntervalDefault;
         flyingBoostInterval = flyingBoostIntervalDefault;
         shieldBoostInterval = shieldBoostIntervalDefault;
         fireBoostInterval = fireBoostIntervalDefault;
+        coinBoostInterval = coinBoostIntervalDefault;
 
         gamePaused = true;
         restartButton.style.display = 'none';
@@ -827,6 +863,11 @@
             if (Date.now() - lastShieldBoostTime > shieldBoostInterval) {
                 spawnPowerUp('shield_boost');
                 shieldBoostInterval = Math.random() * 55000;
+            }
+
+            if (Date.now() - lastCoinBoostTime > coinBoostInterval) {
+                spawnPowerUp('coin_boost');
+                coinBoostInterval = Math.random() * 55000;
             }
 
             increaseDifficulty();

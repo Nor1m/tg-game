@@ -41,8 +41,8 @@ canvas {
     display: none;
 }
 
-#score {
-    display: none;
+#score_block {
+    display: flex;
     position: absolute;
     top: 20px;
     left: 20px;
@@ -50,6 +50,21 @@ canvas {
     color: #e8e0ff;
     font-family: Arial, sans-serif;
     z-index: 10;
+}
+
+#score {
+    display: none;
+}
+
+#score_bonus {
+    display: none;
+    padding-left: 15px;
+    color: #ffca00;
+    animation: heartbeat 0.8s cubic-bezier(0.4, 0, 1, 1) infinite;
+}
+
+#score_bonus:before {
+    content: '+';
 }
 
 .boosts_block {
