@@ -897,7 +897,7 @@
     }
 
     function drawFPS() {
-        fpsElement.innerHTML = `FPS: ${fps}`;
+        fpsElement.innerHTML = `FPS:${fps}`;
     }
 
     function handleInput() {

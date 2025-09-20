@@ -73,7 +73,7 @@ canvas {
     position: absolute;
     top: 50px;
     right: 20px;
-    font-size: 12px;
+    font-size: 10px;
     z-index: 10;
     color: #fff;
     opacity: .15;
