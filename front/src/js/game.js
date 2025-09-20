@@ -567,13 +567,12 @@
         for (let i = 0; i < maxLives; i++) {
             const heart = document.createElement('div');
             heart.className = 'heart';
+            heart.innerHTML = '♥';
 
             if (i < lives) {
                 heart.classList.add('active');
-                heart.innerHTML = '♥'; // Полное сердце
             } else {
                 heart.classList.add('inactive');
-                heart.innerHTML = '♡'; // Пустое сердце
             }
 
             livesElement.appendChild(heart);

@@ -1,6 +1,16 @@
 body {
+    background-image: url(../../images/wallpaper.png);
+    background-size: auto;
+    background-repeat: no-repeat;
+    background-position: bottom;
     margin: 0;
     overflow: hidden;
+}
+
+* {
+    user-select: none;
+    -webkit-user-select: none;
+    font-family: monospace !important;
 }
 
 canvas {
@@ -70,19 +80,6 @@ canvas {
     color: #ff7aad;
 }
 
-body {
-    background-image: url(../../images/wallpaper.png);
-    background-size: auto;
-    background-repeat: no-repeat;
-    background-position: bottom;
-}
-
-* {
-    user-select: none;
-    -webkit-user-select: none;
-    font-family: monospace !important;
-}
-
 .footer {
     color: rgb(255 255 255 / 1%);
     position: fixed;
@@ -92,7 +89,6 @@ body {
 }
 
 #lives {
-    display: none;
     position: absolute;
     top: 20px;
     right: 20px;
@@ -106,6 +102,7 @@ body {
 .heart {
     transition: all 0.3s ease;
     text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    font-size: 1.2em;
 }
 
 .heart.active {
@@ -114,8 +111,9 @@ body {
 }
 
 .heart.inactive {
-    color: #666;
-    opacity: 0.6;
+    color: #ff4757;
+    opacity: 0.3;
+    filter: grayscale(100%);
 }
 
 @keyframes heartbeat {
