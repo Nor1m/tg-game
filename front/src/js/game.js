@@ -533,7 +533,7 @@
             player.powerUpEndTime = 0;
             player.hoverEndTime = 0;
         } else {
-            doVibrate([100, 50, 100, 200, 100, 50, 100]);
+            doVibrate([300]);
             respawnPlayer();
         }
     }
@@ -636,6 +636,7 @@
                     player.jumpPower = -18 * scale;
                     player.powerUpEndTime = Math.max(player.powerUpEndTime, Date.now() + 10000);
                 } else if (powerUp.type === 'flying_boost') {
+                    doVibrate([100, 50, 100]);
                     playBoostSound();
                     fireBoostActive = false;
                     player.poweredUp = false;
