@@ -112,7 +112,6 @@
 
     const scale = Math.min(canvas.width / 800, canvas.height / 600);
     const groundLevel = canvas.height - 20 * scale;
-    let flyingVibrationInterval = null;
 
     const sounds = {
         background: 'sounds/background.ogg',
@@ -527,7 +526,6 @@
             stopBackgroundSound();
             stopFireSound();
             stopFlyingSound();
-            stopFlyingVibration();
             playBoomSound();
             doVibrate([300, 100, 200, 100, 150, 100, 300]);
             submitScore(score);
@@ -535,13 +533,12 @@
             player.powerUpEndTime = 0;
             player.hoverEndTime = 0;
         } else {
-            doVibrate([100, 30, 80, 30, 100]);
+            doVibrate([100, 50, 100, 200, 100, 50, 100]);
             respawnPlayer();
         }
     }
 
     function respawnPlayer() {
-        try { if (navigator && typeof navigator.vibrate === 'function') navigator.vibrate(0); } catch (e) {}
         // Временная неуязвимость после возрождения (2 секунды)
         const invulnerabilityTime = 2000;
         shieldBoostEndTime = Math.max(shieldBoostEndTime, Date.now() + invulnerabilityTime);
@@ -557,9 +554,6 @@
             obstacle.x > player.x + player.width + 200 * scale ||
             obstacle.x + obstacle.width < player.x - 200 * scale
         );
-
-        // Визуальная индикация возрождения (можно добавить звук возрождения)
-        playBoostSound();
     }
 
     function updateLives() {
@@ -636,13 +630,12 @@
 
             if (distance < player.width / 2 + powerUp.radius) {
                 if (powerUp.type === 'jump_boost') {
-                    doVibrate([100, 30, 80, 30, 100]);
+                    doVibrate([100, 50, 100]);
                     playBoostSound();
                     player.poweredUp = true;
                     player.jumpPower = -18 * scale;
                     player.powerUpEndTime = Math.max(player.powerUpEndTime, Date.now() + 10000);
                 } else if (powerUp.type === 'flying_boost') {
-                    startFlyingVibration();
                     playBoostSound();
                     fireBoostActive = false;
                     player.poweredUp = false;
@@ -651,34 +644,19 @@
                     player.hoverEndTime = Math.max(player.hoverEndTime, Date.now() + 5000);
                     flightBaseHeight = player.y;
                 } else if (powerUp.type === 'shield_boost') {
-                    doVibrate([100, 30, 80, 30, 100]);
+                    doVibrate([100, 50, 100]);
                     playBoostSound();
                     fireBoostActive = false;
                     player.poweredUp = false;
                     shieldBoostEndTime = Date.now() + 10000;
                 } else if (powerUp.type === 'fire_boost') {
-                    doVibrate([100, 30, 80, 30, 100]);
+                    doVibrate([100, 50, 100]);
                     playBoostSound();
                     activateFireBoost();
                 }
                 powerUps.splice(index, 1);
             }
         });
-    }
-
-    function startFlyingVibration() {
-        stopFlyingVibration();
-        flyingVibrationInterval = setInterval(() => {
-            doVibrate(50);
-        }, 500);
-    }
-
-    function stopFlyingVibration() {
-        if (flyingVibrationInterval) {
-            clearInterval(flyingVibrationInterval);
-            flyingVibrationInterval = null;
-        }
-        doVibrate(0);
     }
 
     function activateFireBoost() {
@@ -862,7 +840,6 @@
             player.hoverEndTime = Date.now();
             player.flying = false;
             stopFlyingSound();
-            stopFlyingVibration();
         }
         if (player.grounded) {
             player.dy = player.jumpPower;
