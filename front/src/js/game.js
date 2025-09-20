@@ -862,7 +862,7 @@
 
             if (Date.now() - lastShieldBoostTime > shieldBoostInterval) {
                 spawnPowerUp('shield_boost');
-                shieldBoostInterval = Math.random() * 50000;
+                shieldBoostInterval = Math.random() * 45000;
             }
 
             if (Date.now() - lastCoinBoostTime > coinBoostInterval) {
