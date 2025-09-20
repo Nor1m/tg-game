@@ -867,7 +867,7 @@
 
             if (Date.now() - lastCoinBoostTime > coinBoostInterval) {
                 spawnPowerUp('coin_boost');
-                coinBoostInterval = Math.random() * 45000;
+                coinBoostInterval = Math.random() * 40000;
             }
 
             increaseDifficulty();
