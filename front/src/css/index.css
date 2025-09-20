@@ -118,7 +118,7 @@ canvas {
 #lives {
     display: none;
     position: absolute;
-    top: 16px;
+    top: 17px;
     right: 20px;
     font-size: 24px;
     z-index: 10;
